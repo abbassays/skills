@@ -1,5 +1,5 @@
 ---
-name: create-bot
+name: create-linear-bot
 description: "Use when scaffolding a Linear-to-GitHub agent bridge (the @pasha pattern in this repo). Triggers: 'set up an agent', 'create a bot bridge', 'add a Linear bot', 'add an @<name> verb command system to a Linear workspace', 'scaffold a Linear webhook → GitHub Actions agent', 'how do I rename our bot', 'rename the agent'. Covers architecture, file scaffolding, OAuth + webhook setup, verification, the file-handoff output pattern, status auto-updates, and the rename workflow."
 ---
 

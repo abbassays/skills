@@ -11,7 +11,7 @@ If you find something useful, clone the skill directory you want and drop it int
 | Skill | Description |
 |---|---|
 | [automated-pr-review](automated-pr-review/SKILL.md) | Claude-powered PR review system — three-job GitHub Actions workflow (automated review, pre-merge PM report, on-demand agent) with project-aware context via product-knowledge and coding-standards docs. |
-| [create-bot](create-bot/SKILL.md) | Scaffolds a Linear-to-GitHub Actions agent bridge: Linear comments mentioning `@<bot> <verb>` trigger Claude Code Action via a Cloudflare Worker, with centralised identity config and a rename workflow. |
+| [create-linear-bot](create-linear-bot/SKILL.md) | Scaffolds a Linear-to-GitHub Actions agent bridge: Linear comments mentioning `@<bot> <verb>` trigger Claude Code Action via a Cloudflare Worker, with centralised identity config and a rename workflow. |
 | [setup-claude-sounds](setup-claude-sounds/SKILL.md) | Wires custom per-event sound pools to Claude Code lifecycle hooks on macOS — personalised audio for SessionStart, Stop, Notification, and more, with headphone-friendly volume cap. |
 
 ---
@@ -42,7 +42,7 @@ git clone https://github.com/abbassays/claude-skills ~/.claude/skills
 skills/
 ├── automated-pr-review/
 │   └── SKILL.md
-├── create-bot/
+├── create-linear-bot/
 │   └── SKILL.md
 ├── setup-claude-sounds/
 │   └── SKILL.md
