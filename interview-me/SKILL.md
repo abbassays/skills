@@ -1,6 +1,6 @@
 ---
 name: interview-me
-description: Extracts what the user actually wants instead of what they think they should want. Achieves this through one-question-at-a-time interview until ~95% confidence about the underlying intent. Use when an ask is underspecified ("build me X" without "for whom" or "why now"), when the user explicitly invokes ("interview me", "grill me", "are we sure?", "stress-test my thinking"), or when you catch yourself silently filling in ambiguous requirements before any plan, spec, or code exists.
+description: Extracts what the user actually wants instead of what they think they should want. Achieves this through batched multiple-choice interviewing — 2-4 independent questions per round via AskUserQuestion, with dependent questions sequenced across rounds — until ~95% confidence about the underlying intent, typically in 2-4 rounds. Use when an ask is underspecified ("build me X" without "for whom" or "why now"), when the user explicitly invokes ("interview me", "grill me", "are we sure?", "stress-test my thinking"), or when you catch yourself silently filling in ambiguous requirements before any plan, spec, or code exists.
 ---
 
 # Interview Me
@@ -11,7 +11,7 @@ What people ask for and what they actually want are different things. They ask f
 
 The cheapest moment to find this gap is before any plan, spec, or code exists. Once you've started building, switching costs are real, and the user will rationalize the wrong thing into a "good enough" thing. The misfit gets locked in.
 
-This skill closes the gap before it costs anything. The other Define-phase skills assume you already know roughly what you want: `idea-refine` generates variations from an idea, `spec-driven-development` writes the requirements down, `doubt-driven-development` stress-tests a plan after you've drafted one. Interview-me is the part before all of those, where you ask one question at a time, with your best guess attached, until you can predict what the user is going to say before they say it.
+This skill closes the gap before it costs anything. The other Define-phase skills assume you already know roughly what you want: `idea-refine` generates variations from an idea, `spec-driven-development` writes the requirements down, `doubt-driven-development` stress-tests a plan after you've drafted one. Interview-me is the part before all of those, where you ask in tight rounds of independent questions, your best guesses attached as the options, until you can predict what the user is going to say before they say it.
 
 ## When to Use
 
@@ -50,31 +50,26 @@ The number forces honesty. If you wrote down a high number but can't actually pr
 
 When confidence is below ~70%, append a brief reason on the same line — what's still unresolved or missing. This tells the user exactly what the interview needs to surface, and prevents the number from being a vague signal.
 
-### Step 2: Ask one question at a time, each with a guess attached
+### Step 2: Batch independent questions; sequence dependent ones
 
-Format:
+Use the **AskUserQuestion** tool to ask. It presents 2–4 questions at once, each as a short multiple-choice with 2–4 options and an always-available "Other" for free text. That tool is the interview's workhorse — reach for it instead of typing questions into prose.
 
-```
-Q: <one focused question>
-GUESS: <your hypothesis for the answer, with the reasoning that produced it>
-```
+**The dividing line is dependency, not count.** Two questions belong in the same round when neither answer changes how you'd frame the other. When one question's wording, options, or even relevance depends on another's answer, the dependent one waits for the next round. Within that rule, ask as many independent questions as fit (the tool caps at 4) and aim to converge in **2–4 rounds total**:
 
-Wait for the user to react before asking the next question.
+- **Round 1** — the foundational unknowns that don't depend on each other: who it's for, why now, what success looks like, the binding constraint. These are almost always mutually independent, so batch them.
+- **Round 2** — the second-order questions that Round 1's answers open up. You couldn't have framed these correctly before, which is exactly why they waited.
+- **Round 3–4** — refinement and edge cases, only if confidence hasn't crossed ~95%.
 
-**Why one at a time, not a batch:**
+**The options ARE your guesses.** The old format attached a single `GUESS:` line to each question. The structured version is stronger: give each question 2–3 concrete hypotheses as its options, list your top pick first and mark it "(Recommended)", and put a one-line rationale in each option's description. This commits you to a position the user can react against — reacting to options is faster than generating from a blank prompt — while surfacing *your* assumptions, which is what the interview exists to expose. When a question is genuinely open (no small set of plausible answers), still offer your best 2–3 guesses; the user takes "Other" if you missed.
 
-- The user can't react to your hypotheses if you bury them in a list
-- Batches encourage skim-reading and surface answers
-- The third question often depends on the answer to the first; asking them all at once locks in the wrong framing
-- The user's energy for thinking carefully is finite; spend it one question at a time
+**What batching buys, and what the old rule got wrong.** The earlier version banned batches for four reasons. The structured tool answers three of them outright, and the fourth becomes the dividing line above:
 
-**Why attach a guess:**
+- *"Hypotheses get buried in a list"* — no longer true: each option is a discrete, selectable hypothesis with its own description, not prose to skim past.
+- *"Batches encourage surface answers"* — multiple-choice forces a discrete decision per question; skimming is harder than with open prose, not easier.
+- *"User energy is finite"* — batching conserves it: 2–4 rounds beats 8–12 sequential turns for the same coverage.
+- *"Q3 often depends on Q1"* — correct, and that's the one real constraint. So don't batch dependent questions. Dependency decides what shares a round; raw count never did.
 
-- The user reacts faster to a wrong guess than they generate an answer from scratch
-- It commits you to a hypothesis you can be visibly wrong about, which keeps you honest
-- It surfaces *your* assumptions, which is what the interview is meant to expose
-
-The risk here is a polite user agreeing with your guess to be agreeable. Mitigate by being visibly willing to be wrong, and occasionally guess in a direction you expect the user to push back on.
+The sycophancy risk remains: a polite user may pick your recommended option just to agree. Mitigate the same way as before — be visibly willing to be wrong, and now and then make a *non*-recommended option the one you actually suspect is right, so "(Recommended)" isn't a tell the user can simply defer to.
 
 ### Step 3: Listen for "want vs. should want"
 
@@ -159,23 +154,22 @@ Agent:
 HYPOTHESIS: You want a way to answer "how are we doing?" in standup, and "dashboard" came to mind because that's the conventional answer.
 CONFIDENCE: ~30% — missing: who it's for, what "metrics" are, and what success looks like
 
-Q:     When you say "how are we doing?", who's asking — you alone, the engineering team in standup, or up the chain (e.g., your manager, an exec, a board)?
-GUESS: engineering team in standup, because "we" usually scopes that way and standups are where this question gets asked. If it's for execs the metrics and the framing change a lot.
+[AskUserQuestion — Round 1: three independent questions, each option a hypothesis]
+  Q1 "Who's this for?"       → You alone (Recommended) · Eng team in standup · Up the chain (manager / exec)
+  Q2 "What's the real gap?"  → Results are scattered (Recommended) · You don't know what's running · You don't trust the numbers
+  Q3 "What makes it done?"   → You glance once a day and feel oriented (Recommended) · It replaces a manual report · Others depend on it
 
-User: It's actually for me. I keep losing track of which experiments are running and what their early signal looks like.
+User picks: For me · I don't know what's running · Glance once a day
 
 Agent:
-Updated read: not a team dashboard at all. It's a personal experiment tracker. Confidence: ~60% — still missing: what "early signal" means and what done looks like.
+Updated read: not a team dashboard at all — a personal experiment tracker, and the gap is *discovery*, not display. Confidence ~70%. Round 1's answer reframes the next question, so it waited:
 
-Q:     Is the gap that you don't know which experiments exist, or that you can't see their results in one place?
-GUESS: the second one. You have a list of experiments somewhere, but their results live in five different tools, and reconciling them by hand is what you're tired of.
-
-User: First one actually. I literally don't have a list. They're spread across different docs.
-
-Agent: <continues>
+[AskUserQuestion — Round 2: dependent on "I don't know what's running"]
+  Q1 "Where do experiments live now?" → Scattered across docs (Recommended) · In people's heads · In a tool that lists them badly
+  Q2 "Minimum that helps?"            → A single living list (Recommended) · List + early signal per item · Full dashboard with charts
 ```
 
-Two questions in, the agent has discovered the actual ask isn't "a dashboard." It's "a list." Different artifact, different scope, different work. The dashboard would have been wrong.
+Round 1 batched three questions that didn't depend on each other and got answered in one pass. Round 2's questions *couldn't* have been written before Round 1 — "where do experiments live" only matters once you know the gap is discovery — so they were sequenced, not batched. Two rounds in, the agent has discovered the actual ask isn't "a dashboard." It's "a list." Different artifact, different scope, different work. The dashboard would have been wrong — and the structured options let the user confirm each guess with a click instead of composing prose.
 
 ## Interaction with Other Skills
 
@@ -193,15 +187,17 @@ Two questions in, the agent has discovered the actual ask isn't "a dashboard." I
 | "Asking too many questions wastes their time" | Time wasted by 4–6 targeted questions is small. Time wasted by building the wrong thing is enormous, and the user is the one bearing that cost. |
 | "I'll figure it out as I build" | Switching costs after code exists are 10x what they are now. Discovery during implementation is rework. |
 | "They said 'whatever you think,' so I should just decide" | "Whatever you think" is delegation, not decision. Re-ask with two concrete options as a choice. |
-| "I should give them several options to pick from" | Options work when the user knows what they want and is choosing between trade-offs. They don't know what they want yet. Listing options widens the search; asking narrows it. |
+| "I should give them several solution options to pick from" | A menu of *solutions* (which library, which layout) widens the search before you know the problem — still wrong. That's different from the interview mechanism, where the options are 2–3 hypotheses about the *answer to a diagnostic question*, which narrows. Solution menu: no. Hypotheses as options: yes. |
 | "If I attach my guess, I'm leading them" | Leading is the point. Reacting is faster than generating from scratch. The risk is sycophancy, not leading; mitigate by being visibly willing to be wrong. |
 | "We've talked enough, I get it" | Test it: can you predict their reaction to the next three questions? If not, you don't get it yet. |
 | "The user said yes, we're done" | If the yes followed a vague restate or an open-ended "sounds good," the yes is hollow. Restate concretely and re-confirm. |
 
 ## Red Flags
 
-- Three or more questions in a single message: that's batching, not interviewing
-- A question without your hypothesis attached: that's surveying, not committing
+- Batching questions that depend on each other — if Q2's wording or options change based on Q1's answer, they belong in separate rounds
+- More than 4 questions in one round (the AskUserQuestion cap), or padding a round with filler to hit a number
+- A question whose options aren't your genuine hypotheses, or with no recommended pick: that's surveying, not committing
+- Falling back to one-at-a-time prose for questions that are plainly independent: that's the old habit, not the interview
 - Accepting "whatever you think is best" as a terminal answer
 - Producing a spec, plan, or task list before the user has explicitly confirmed your restate
 - Questions framed as "what would be best practice?" instead of "what do you actually want?"
@@ -217,7 +213,8 @@ After applying interview-me:
 
 - [ ] An explicit hypothesis with a confidence number was stated in the first turn
 - [ ] Every confidence number below ~70% was accompanied by a one-line reason (what's still unresolved or missing)
-- [ ] Questions were asked one at a time, each with the agent's guess attached
+- [ ] Independent questions were batched (2–4 per round via AskUserQuestion) and dependent questions were sequenced across rounds; the interview converged in roughly 2–4 rounds
+- [ ] Each question's options were the agent's genuine hypotheses, with a recommended (top-guess) pick and a one-line rationale per option
 - [ ] At least one "what would you actually want if you didn't have to justify it?" probe ran when the user gave a sophistication-signaling or convention-signaling answer
 - [ ] A concrete restate (Outcome / User / Why now / Success / Constraint / Out of scope) was written back to the user
 - [ ] The user confirmed the restate with an explicit yes (not "whatever you think," not "sounds good," not silence)
