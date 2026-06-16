@@ -100,16 +100,26 @@ The prototype should *look like the real app*. Hosts using this skill typically 
 - **No purple gradient hero + Inter + three centered feature cards.** That is the visual signature of an AI-generated mockup and the user will read it as "wrong app."
 - **Sample data** — use realistic copy from the actual feature (the user's audit IDs, the user's brand names, the user's real domains). Don't lorem-ipsum it — the user is judging both the layout AND the content fit, and lorem-ipsum makes both harder.
 
-### 6. Tell the user, then wait
+### 6. Open it for the user, then wait
 
-Once the file is written, surface it cleanly:
+Once the file is written, **actually open it** in the user's default browser — don't just print the path and ask them to open it themselves. Run:
+
+```bash
+open /tmp/<slug>-prototype.html
+```
+
+On macOS this launches the prototype in the default browser immediately. (On Linux the equivalent is `xdg-open`; on Windows/WSL, `start`. Use `open` by default since the host is macOS.)
+
+Then surface the path so the user can re-open it later, and ask for sign-off:
 
 ```
-Prototype: /tmp/<slug>-prototype.html
+Prototype: /tmp/<slug>-prototype.html  (opened in your browser)
 
-Open it in a browser and confirm the visual direction before I touch any TSX.
+Confirm the visual direction before I touch any TSX.
 Say "looks good" / "approved" / "ship it" / "lgtm" to unblock, or tell me what to change.
 ```
+
+Whenever you write an updated version of the prototype during iteration (step 7), run `open` on it again so the user sees the latest without having to refresh manually.
 
 Then stop. Do not call any Edit/Write on a `.tsx` file. Do not preemptively start drafting the component code "while waiting." Wait for the user's response.
 
@@ -136,6 +146,7 @@ Before declaring the prototype done and pinging the user, run this checklist men
 - [ ] CSS tokens live in `:root` so re-skinning is possible
 - [ ] Semantic HTML — `<table>`, `<h2>`, etc.
 - [ ] No external runtime deps beyond Google Fonts via `<link>`
+- [ ] Opened for the user with `open /tmp/<slug>-prototype.html` (not just linked)
 
 ## Concrete BEFORE/AFTER CSS
 
