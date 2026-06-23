@@ -17,6 +17,7 @@ If you find something useful, clone the skill directory you want and drop it int
 | [excalidraw-diagram-generator](excalidraw-diagram-generator/SKILL.md) | Generates Excalidraw diagrams from natural-language descriptions — flowcharts, relationship diagrams, mind maps, and system architectures — outputting `.excalidraw` JSON files that open directly in Excalidraw. |
 | [find-skills](find-skills/SKILL.md) | Helps discover and install agent skills when you ask "how do I do X", "find a skill for X", or want to extend Claude's capabilities. |
 | [interview-me](interview-me/SKILL.md) | Extracts what you actually want via batched multiple-choice interviewing (2–4 questions per round) until ~95% confident about intent — used before any plan or code when an ask is underspecified. |
+| [jsdoc-typescript-docs](jsdoc-typescript-docs/SKILL.md) | Documents TypeScript code with JSDoc comments and generates API documentation (TypeDoc-style). Use for "JSDoc", "code documentation", "API docs", or "inline documentation" requests. |
 | [setup-claude-sounds](setup-claude-sounds/SKILL.md) | Wires custom per-event sound pools to Claude Code lifecycle hooks on macOS — personalised audio for SessionStart, Stop, Notification, and more, with headphone-friendly volume cap. |
 | [ship-it](ship-it/SKILL.md) | Portable, any-codebase end-to-end delivery workflow — takes any task to a merge-ready PR. Auto-detects whether the repo has a code-review system and a rulebook, loudly flags either if missing, and offers to bootstrap one. Zero hardcoded repo paths, commands, or MCP slugs. |
 | [ui-prototype-first](ui-prototype-first/SKILL.md) | A visual sign-off gate — builds a self-contained static HTML prototype (with BEFORE/AFTER callouts) and opens it in the browser before any React/TSX is written, hard-blocking component edits until you approve the design. |
@@ -74,6 +75,8 @@ skills/
 ├── find-skills/
 │   └── SKILL.md
 ├── interview-me/
+│   └── SKILL.md
+├── jsdoc-typescript-docs/
 │   └── SKILL.md
 ├── setup-claude-sounds/
 │   └── SKILL.md
