@@ -11,6 +11,7 @@ If you find something useful, clone the skill directory you want and drop it int
 | Skill | Description |
 |---|---|
 | [automated-pr-review](automated-pr-review/SKILL.md) | Claude-powered PR review system — three-job GitHub Actions workflow (automated review, pre-merge PM report, on-demand agent) with project-aware context via product-knowledge and coding-standards docs. |
+| [claude-gateway](claude-gateway/SKILL.md) | How to call Claude through the self-hosted gateway at `claude.bitsmiths.dev` — an OpenAI-compatible API wrapping a Claude Code OAuth token so internal tools bill against the Claude Max subscription at zero marginal cost. (Internal Bitsmiths infra; API key redacted.) |
 | [create-linear-bot](create-linear-bot/SKILL.md) | Scaffolds a Linear-to-GitHub Actions agent bridge: Linear comments mentioning `@<bot> <verb>` trigger Claude Code Action via a Cloudflare Worker, with centralised identity config and a rename workflow. |
 | [dev-codebase-audit](dev-codebase-audit/SKILL.md) | Multi-repo, evidence-grounded audit of a single developer's recent work — produces a meeting-ready agenda, a full per-repo audit, and a multi-axis ratings card (10 axes, 1–5 scale, evidence-cited). Spawns parallel per-repo subagents and synthesizes their findings into cross-cutting patterns and systemdesign.io recommendations. |
 | [diagram-walkthrough](diagram-walkthrough/skill.md) | Generates a self-contained HTML file with an interactive, clickable Mermaid diagram (flowchart or ER) that explains how a codebase feature, flow, architecture, or schema works — a visual mental model readable in under 2 minutes. |
@@ -52,6 +53,8 @@ git clone https://github.com/abbassays/claude-skills ~/.claude/skills
 ```
 skills/
 ├── automated-pr-review/
+│   └── SKILL.md
+├── claude-gateway/
 │   └── SKILL.md
 ├── create-linear-bot/
 │   └── SKILL.md
