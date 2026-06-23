@@ -1,0 +1,98 @@
+name: Vercel Deploy Trigger (monorepo)
+
+# Monorepo: SEVERAL Vercel projects, each connected to a different Root
+# Directory. List those dirs in APPS below. On push we nudge only the apps whose
+# dir changed; on manual dispatch you pick one app (or, with no `app`, all).
+#
+# Rename this file to vercel-deploy-trigger.yml when you drop it in
+# .github/workflows/ (scripts/redeploy.sh dispatches that exact name).
+on:
+  push:
+    branches:
+      - '**'
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: Branch to (re)deploy. Defaults to the branch this run was dispatched on.
+        type: string
+        required: false
+      app:
+        description: App dir to redeploy (must match an APPS entry). Empty = all configured apps.
+        type: string
+        required: false
+
+permissions:
+  contents: write
+
+jobs:
+  plan:
+    # Manual dispatch always runs. Pushes run unless it's a branch/tag deletion
+    # or the deploy-trigger commit itself.
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.event.head_commit != null &&
+       !contains(github.event.head_commit.message, '[skip-deploy-trigger]'))
+    runs-on: ubuntu-latest
+    outputs:
+      trigger-files: ${{ steps.pick.outputs.files }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref || github.ref_name }}
+          fetch-depth: 2   # need HEAD~1 to diff changed dirs on push
+
+      - name: Pick target apps
+        id: pick
+        env:
+          # >>> EDIT THIS LIST: one Vercel-project Root Directory per line <<<
+          APPS: |
+            apps/web
+            apps/admin
+          INPUT_APP: ${{ inputs.app }}
+          EVENT: ${{ github.event_name }}
+        run: |
+          set -euo pipefail
+          mapfile -t apps < <(printf '%s\n' "$APPS" | sed 's/[[:space:]]*$//' | sed '/^$/d')
+
+          targets=()
+          if [ "$EVENT" = "workflow_dispatch" ] && [ -n "${INPUT_APP:-}" ]; then
+            match=""
+            for a in "${apps[@]}"; do [ "$a" = "$INPUT_APP" ] && match="$a"; done
+            if [ -z "$match" ]; then
+              echo "::error::app '$INPUT_APP' is not in APPS. Configured: ${apps[*]}"
+              exit 1
+            fi
+            targets=("$INPUT_APP")
+          elif [ "$EVENT" = "workflow_dispatch" ]; then
+            targets=("${apps[@]}")
+          else
+            # push: trigger apps whose dir changed in this push.
+            base="$(git rev-parse HEAD~1 2>/dev/null || true)"
+            if [ -z "$base" ]; then
+              targets=("${apps[@]}")           # first commit, no parent to diff
+            else
+              changed="$(git diff --name-only "$base" HEAD)"
+              for a in "${apps[@]}"; do
+                if printf '%s\n' "$changed" | grep -q "^${a}/"; then targets+=("$a"); fi
+              done
+            fi
+          fi
+
+          {
+            echo 'files<<EOF'
+            if [ ${#targets[@]} -gt 0 ]; then
+              for a in "${targets[@]}"; do printf '%s/.vercel-deploy-trigger\n' "$a"; done
+            fi
+            echo 'EOF'
+          } >> "$GITHUB_OUTPUT"
+
+          echo "Target apps: ${targets[*]:-(none)}"
+
+  trigger:
+    needs: plan
+    if: ${{ needs.plan.outputs.trigger-files != '' }}
+    uses: ./.github/workflows/vercel-deploy-trigger.reusable.yml
+    with:
+      ref: ${{ inputs.ref || github.ref_name }}
+      trigger-files: ${{ needs.plan.outputs.trigger-files }}
+    secrets: inherit

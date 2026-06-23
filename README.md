@@ -19,6 +19,7 @@ If you find something useful, clone the skill directory you want and drop it int
 | [interview-me](interview-me/SKILL.md) | Extracts what you actually want via batched multiple-choice interviewing (2–4 questions per round) until ~95% confident about intent — used before any plan or code when an ask is underspecified. |
 | [jsdoc-typescript-docs](jsdoc-typescript-docs/SKILL.md) | Documents TypeScript code with JSDoc comments and generates API documentation (TypeDoc-style). Use for "JSDoc", "code documentation", "API docs", or "inline documentation" requests. |
 | [setup-claude-sounds](setup-claude-sounds/SKILL.md) | Wires custom per-event sound pools to Claude Code lifecycle hooks on macOS — personalised audio for SessionStart, Stop, Notification, and more, with headphone-friendly volume cap. |
+| [setup-vercel-redeploy](setup-vercel-redeploy/SKILL.md) | Scaffolds an on-demand Vercel redeploy trigger (GitHub Actions workflow + `redeploy` script) that forces a build past the free/Hobby plan's author restriction via a tiny dummy commit authored as Claude. Supports single-project and multi-project monorepos. |
 | [ship-it](ship-it/SKILL.md) | Portable, any-codebase end-to-end delivery workflow — takes any task to a merge-ready PR. Auto-detects whether the repo has a code-review system and a rulebook, loudly flags either if missing, and offers to bootstrap one. Zero hardcoded repo paths, commands, or MCP slugs. |
 | [ui-prototype-first](ui-prototype-first/SKILL.md) | A visual sign-off gate — builds a self-contained static HTML prototype (with BEFORE/AFTER callouts) and opens it in the browser before any React/TSX is written, hard-blocking component edits until you approve the design. |
 | [vibe-estimate](vibe-estimate/SKILL.md) | Produces a tight hourly estimate for a coding task calibrated to an AI-augmented workflow — outputs an `Elapsed · billable` range plus the 2–4 dependencies that move it, no planning essay. |
@@ -80,6 +81,9 @@ skills/
 │   └── SKILL.md
 ├── setup-claude-sounds/
 │   └── SKILL.md
+├── setup-vercel-redeploy/
+│   ├── SKILL.md
+│   └── templates/
 ├── ship-it/
 │   └── SKILL.md
 ├── ui-prototype-first/
