@@ -1,5 +1,7 @@
-# Private / secret skills — never committed
-secret/
+# Private skills — kept as top-level dirs so Claude Code discovers them,
+# but never tracked. Add a line per private skill.
+draft-message/
+linear-budget-report/
 
 # macOS
 .DS_Store
