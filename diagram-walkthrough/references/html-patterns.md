@@ -12,7 +12,7 @@ Reference for generating interactive walkthrough HTML files using React (UMD) + 
 
 ## Design Principles
 
-1. **Always dark mode** — Black bg, white text, purple accents. Set `<html style="color-scheme: dark">`, `<body class="bg-wt-bg">`. The `color-scheme: dark` on `<html>` is **mandatory** — scrollbars, form controls, and system UI all depend on it.
+1. **Always dark mode, two color layers** — Black bg, white text. A per-run **accent** hue (varies; see [Accent rotation](#accent-rotation)) drives the chrome + `primary` nodes; **fixed semantic colors** encode node roles (green=positive, blue=info, amber=warning, red=danger, violet=data, gray=external). No purple-only restriction. Set `<html style="color-scheme: dark">`, `<body class="bg-wt-bg">`. The `color-scheme: dark` on `<html>` is **mandatory** — scrollbars, form controls, and system UI all depend on it.
 2. **Quick mental model** — Readable in <2 min, not a code reference
 3. **TL;DR first** — Summary card above diagram
 4. **Full-size diagram** — Mermaid at natural size, never squished
@@ -23,6 +23,8 @@ Reference for generating interactive walkthrough HTML files using React (UMD) + 
 
 ## Color Palette & Tailwind Config
 
+The neutrals are fixed. `wt-accent` / `wt-file` come from the **per-run accent** — substitute the chosen accent's `base` / `light` hexes (see [Accent rotation](#accent-rotation)) wherever `ACCENT_BASE` / `ACCENT_LIGHT` appear in this doc.
+
 | Token | Hex | Use |
 |-------|-----|-----|
 | `wt-bg` | `#000000` | Page background |
@@ -31,20 +33,40 @@ Reference for generating interactive walkthrough HTML files using React (UMD) + 
 | `wt-border` | `#2a2a2a` | Borders, dividers |
 | `wt-fg` | `#ffffff` | Primary text |
 | `wt-muted` | `#a0a0a0` | Secondary text |
-| `wt-accent` | `#a855f7` | Purple accent |
-| `wt-file` | `#c084fc` | File paths |
+| `wt-accent` | `ACCENT_BASE` | Theme accent (varies per run) |
+| `wt-file` | `ACCENT_LIGHT` | File paths, inline code, links |
 | `wt-red` | `#ef4444` | Close button hover |
 
-### Node Type Colors
+### Accent rotation
 
-| Type | Fill | Stroke | Text |
-|------|------|--------|------|
-| component | `#a855f7` | `#c084fc` | white |
-| composable | `#7c3aed` | `#a78bfa` | white |
-| utility | `#6d28d9` | `#8b5cf6` | white |
-| external | `#525252` | `#737373` | white |
-| event | `#d8b4fe` | `#e9d5ff` | black |
-| data | `#9333ea` | `#a855f7` | white |
+Pick **one** accent per walkthrough. **Default:** derive it from the topic slug so it's stable per topic but varies across topics — e.g. `index = (sum of slug char codes) % rotationLength`. **Override:** if the user named a color/theme ("…in blue", "teal theme"), use the closest accent below (or their exact hex). Never default to the same hue every time.
+
+| Accent | `ACCENT_BASE` | `ACCENT_LIGHT` |
+|--------|------|-------|
+| Teal | `#14b8a6` | `#5eead4` |
+| Sky | `#0ea5e9` | `#7dd3fc` |
+| Cyan | `#06b6d4` | `#67e8f9` |
+| Indigo | `#6366f1` | `#a5b4fc` |
+| Violet | `#8b5cf6` | `#c4b5fd` |
+| Fuchsia | `#d946ef` | `#f0abfc` |
+| Purple | `#a855f7` | `#d8b4fe` |
+| Rose | `#f43f5e` | `#fda4af` |
+
+Pick an accent that isn't confusable with a semantic color the diagram actually uses: avoid **Rose** when you have `danger` nodes, and **Violet/Purple** when you have many `data` nodes. Once chosen, replace every `ACCENT_BASE` / `ACCENT_LIGHT` in the Tailwind config, the `primary` `classDef`, the Mermaid cluster/entity borders, the relation color, and the inline-code color.
+
+### Node Category Colors (semantic — fixed meanings)
+
+These encode what a node *does* and **never vary** between runs. `primary` is the only category that uses the run's accent.
+
+| Category | Fill | Stroke | Text | Meaning |
+|----------|------|--------|------|---------|
+| `primary` | `ACCENT_BASE` | `ACCENT_LIGHT` | white | entry points, main components, the subject |
+| `info` | `#2563eb` | `#60a5fa` | white | reads, queries, fetch, neutral info |
+| `success` | `#16a34a` | `#4ade80` | white | writes, creates, positive/happy path |
+| `warning` | `#b45309` | `#fbbf24` | white | transforms, validation, caution |
+| `danger` | `#dc2626` | `#f87171` | white | deletes, errors, failure paths |
+| `data` | `#7c3aed` | `#a78bfa` | white | stores, state, schemas, DB entities |
+| `external` | `#4b5563` | `#9ca3af` | white | third-party, libs, browser/OS APIs |
 
 ### Tailwind Config Block
 
@@ -55,11 +77,12 @@ Reference for generating interactive walkthrough HTML files using React (UMD) + 
       wt: {
         bg: '#000000', surface: '#0a0a0a', raised: '#141414',
         border: '#2a2a2a', fg: '#ffffff', muted: '#a0a0a0',
-        accent: '#a855f7', file: '#c084fc', red: '#ef4444',
+        accent: 'ACCENT_BASE', file: 'ACCENT_LIGHT', red: '#ef4444',
       },
+      // Semantic node colors — FIXED meanings. `primary` uses the run accent.
       node: {
-        component: '#a855f7', composable: '#7c3aed', utility: '#6d28d9',
-        external: '#525252', event: '#d8b4fe', data: '#9333ea',
+        primary: 'ACCENT_BASE', info: '#2563eb', success: '#16a34a',
+        warning: '#b45309', danger: '#dc2626', data: '#7c3aed', external: '#4b5563',
       },
     }}},
   };
@@ -68,13 +91,16 @@ Reference for generating interactive walkthrough HTML files using React (UMD) + 
 
 ### Mermaid classDef
 
+Substitute `ACCENT_BASE` / `ACCENT_LIGHT` with the chosen accent, and emit only the `classDef`s for categories the diagram uses:
+
 ```
-classDef component fill:#a855f7,stroke:#c084fc,color:#fff
-classDef composable fill:#7c3aed,stroke:#a78bfa,color:#fff
-classDef utility fill:#6d28d9,stroke:#8b5cf6,color:#fff
-classDef external fill:#525252,stroke:#737373,color:#fff
-classDef event fill:#d8b4fe,stroke:#e9d5ff,color:#000
-classDef data fill:#9333ea,stroke:#a855f7,color:#fff
+classDef primary  fill:ACCENT_BASE,stroke:ACCENT_LIGHT,color:#fff
+classDef info     fill:#2563eb,stroke:#60a5fa,color:#fff
+classDef success  fill:#16a34a,stroke:#4ade80,color:#fff
+classDef warning  fill:#b45309,stroke:#fbbf24,color:#fff
+classDef danger   fill:#dc2626,stroke:#f87171,color:#fff
+classDef data     fill:#7c3aed,stroke:#a78bfa,color:#fff
+classDef external fill:#4b5563,stroke:#9ca3af,color:#fff
 ```
 
 ## CDN Dependencies
@@ -105,8 +131,8 @@ No Babel. Shiki loaded via ESM `import` inside `<script type="module">`.
 /* Detail panel body */
 .dt-body p { color:#a0a0a0; font-size:.88rem; line-height:1.65; margin-bottom:10px; }
 .dt-body p code {
-  background:rgba(168,85,247,.12); padding:1px 6px; border-radius:4px;
-  font-family:'SF Mono','Fira Code',monospace; font-size:.82rem; color:#c084fc;
+  background:rgba(255,255,255,.07); padding:1px 6px; border-radius:4px;   /* accent-agnostic tint */
+  font-family:'SF Mono','Fira Code',monospace; font-size:.82rem; color:ACCENT_LIGHT;
 }
 
 /* Shiki + fallback code blocks (shared base) */
@@ -124,6 +150,8 @@ No Babel. Shiki loaded via ESM `import` inside `<script type="module">`.
 ```
 
 ## Mermaid Initialization
+
+**Before using any block below, replace `ACCENT_BASE` / `ACCENT_LIGHT` with the run's chosen accent hexes** (see [Accent rotation](#accent-rotation)). Edge `lineColor` stays neutral gray so the semantic node colors stay readable.
 
 ### Base Theme Variables (shared by all diagram types)
 
@@ -143,7 +171,7 @@ mermaid.initialize({
     ...MERMAID_THEME,
     secondaryColor: '#000000', tertiaryColor: '#000000',
     mainBkg: '#0a0a0a', nodeBorder: '#2a2a2a',
-    clusterBkg: 'rgba(10,10,10,0.8)', clusterBorder: '#7c3aed',
+    clusterBkg: 'rgba(10,10,10,0.8)', clusterBorder: 'ACCENT_BASE',
     titleColor: '#ffffff', edgeLabelBackground: 'transparent',
   },
   flowchart: { useMaxWidth: false, htmlLabels: true, curve: 'basis' },
@@ -159,9 +187,9 @@ mermaid.initialize({
   startOnLoad: false, theme: 'dark', securityLevel: 'loose',
   themeVariables: {
     ...MERMAID_THEME,
-    entityBkg: '#0a0a0a', entityBorder: '#7c3aed', entityTextColor: '#ffffff',
+    entityBkg: '#0a0a0a', entityBorder: 'ACCENT_BASE', entityTextColor: '#ffffff',
     attributeBackgroundColorEven: '#0a0a0a', attributeBackgroundColorOdd: '#141414',
-    labelColor: '#a0a0a0', relationColor: '#a855f7',
+    labelColor: '#a0a0a0', relationColor: 'ACCENT_BASE',
   },
   er: { useMaxWidth: false, layoutDirection: 'TB' },
 });
@@ -198,10 +226,15 @@ const NODES = {
 
 ### LEGEND
 
+List **only** the categories the diagram actually uses. Labels can be domain verbs that fit the walkthrough ("Reads", "Writes", "Deletes") rather than the raw category names.
+
 ```js
 const LEGEND = [
-  { label: 'Component', color: 'bg-node-component' },
-  // ...
+  { label: 'Core flow', color: 'bg-node-primary' },   // the run accent
+  { label: 'Reads',     color: 'bg-node-info' },
+  { label: 'Writes',    color: 'bg-node-success' },
+  { label: 'Deletes',   color: 'bg-node-danger' },
+  { label: 'External',  color: 'bg-node-external' },
 ];
 ```
 

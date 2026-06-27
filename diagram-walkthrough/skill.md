@@ -28,7 +28,14 @@ Generate interactive HTML files with clickable Mermaid diagrams that give new de
 
 **CRITICAL**: When this skill is triggered, you MUST generate a `walkthrough-*.html` file. Never respond with just text — always produce the interactive HTML output.
 
-**Always dark mode.** Every walkthrough uses a pure black background (`#000000`), white text, and purple accents. Never generate light-mode walkthroughs. The `<html>` tag MUST include `style="color-scheme: dark"`.
+**Always dark mode.** Every walkthrough uses a pure black background (`#000000`) and white text. Never generate light-mode walkthroughs. The `<html>` tag MUST include `style="color-scheme: dark"`.
+
+**Color uses two layers — there is no purple-only restriction.**
+
+- **Accent (theme hue) — varies each run.** This replaces the old fixed purple. It drives the chrome (header, links, file paths, inline code, selected-node ring), the subgraph/entity borders, the relation lines, and the `primary` node category. **Pick one accent per walkthrough** from the rotation in [references/html-patterns.md](references/html-patterns.md#accent-rotation), and **vary it across walkthroughs** — by default derive it from the topic slug so it is stable per topic but differs across topics (e.g. `(sum of slug char codes) % rotationLength`). **If the user names a color/theme** ("…in blue", "teal theme", "make it green"), use that as the accent instead of the derived one.
+- **Semantic node colors — fixed meanings, never random.** A node's color encodes what it *does*: 🟢 green = positive/success (create, write, happy path), 🔵 blue = info (read, query, fetch), 🟡 amber = warning (transform, validation), 🔴 red = danger (delete, error, failure path), 🟣 violet = data (stores, state, schemas, DB entities), ⚪ gray = external (third-party, libs, browser/OS APIs). Green always means positive — these never shuffle, because the meaning is the point.
+
+The two layers compose: the accent is the structural backbone (the `primary` category + chrome), and the semantic colors highlight nodes that genuinely play those roles.
 
 ## Workflow
 
@@ -131,15 +138,19 @@ Pick the Mermaid diagram type based on the topic:
 
 **Direction**: Use `graph TD` (top-down) for hierarchical flows, `graph LR` (left-right) for sequential pipelines.
 
-**Node types** (styled by category):
-| Type | Style | Use for |
-|------|-------|---------|
-| `component` | Purple-500 | Vue components, pages |
-| `composable` | Purple-600 | Composables, hooks |
-| `utility` | Purple-700 | Utils, helpers, pure functions |
-| `external` | Gray-600 | Libraries, browser APIs, external services |
-| `event` | Purple-200 | Events, user actions, triggers |
-| `data` | Purple-600 | Stores, state, data structures |
+**Node categories** — assign each node the category matching its *role*, so color carries meaning. Full palette + Mermaid `classDef`s are in [references/html-patterns.md](references/html-patterns.md#node-category-colors-semantic--fixed-meanings):
+
+| Category | Color | Use for |
+|----------|-------|---------|
+| `primary` | Accent (varies per run) | Entry points, main components, the subject of the walkthrough |
+| `info` | 🔵 Blue | Reads, queries, fetches, neutral lookups/info |
+| `success` | 🟢 Green | Writes, creates, commits, positive/happy-path outcomes |
+| `warning` | 🟡 Amber | Transforms, validation, processing, caution |
+| `danger` | 🔴 Red | Deletes, destructive ops, error/failure paths |
+| `data` | 🟣 Violet | Stores, state, data structures, DB entities |
+| `external` | ⚪ Gray | Libraries, browser/OS APIs, third-party services |
+
+Use `primary` for the structural backbone (components, the subject) and reserve the semantic colors for nodes that truly play that role — a delete node is `danger`, a fetch is `info`, a write is `success`. Don't force every node into a semantic color; when a node is just "part of the flow," use `primary` (or `data` for state). Avoid the Violet/Purple accents when the diagram has many `data` nodes, and the Rose accent when it has `danger` nodes, so the accent doesn't read as a semantic color.
 
 **Subgraphs**: Group related nodes into 2-4 subgraphs with approachable mental-model labels (e.g., "User Input", "Core Logic", "Visual Output") — not technical layer names.
 
@@ -206,7 +217,7 @@ Create a single self-contained HTML file following the patterns in [references/h
 2. **TL;DR summary** — 2-3 sentences rendered above the diagram as a visible card. A new dev reads this first, then explores.
 3. Mermaid flowchart with clickable nodes (5-12 nodes)
 4. Node detail panel showing: 1-2 sentence description, file path(s), code snippet
-5. Legend showing node type color coding
+5. Legend showing the categories **actually used** in this diagram (the run's accent for `primary`, plus whichever semantic colors appear) — don't list categories the diagram doesn't use
 
 **Node detail data** — for each node, include:
 ```js
@@ -277,6 +288,10 @@ Before finishing, verify:
 - [ ] Subgraph labels are approachable ("User Input") not technical ("Composable Layer")
 - [ ] Edge labels are plain verbs ("triggers") not method names ("handlePointerDown()")
 - [ ] `<html>` tag includes `style="color-scheme: dark"`
+- [ ] Accent hue chosen from the rotation (or the user's requested color) and substituted everywhere — **never** hardcoded purple
+- [ ] Node categories assigned by role; semantic colors keep their fixed meanings (green=positive, blue=info, amber=warning, red=danger, violet=data, gray=external)
+- [ ] Legend lists only the categories the diagram actually uses
+- [ ] Chosen accent isn't confusable with a semantic color present in the diagram (no Rose accent with `danger` nodes; no Violet/Purple accent with many `data` nodes)
 - [ ] For flowcharts: every node has a `click nodeId nodeClickHandler "View details"` binding in the DIAGRAM
 - [ ] For ER diagrams: `.entityLabel` click handlers are attached after render (Mermaid `click` syntax doesn't work for ER)
 
