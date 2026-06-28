@@ -89,14 +89,14 @@ Hard requirements for the file:
 - **No `localStorage`, `sessionStorage`, `IndexedDB`.** State, if any, lives in JS memory.
 - **Filename is part of the artifact.** `<slug>-prototype.html` so multiple prototypes don't collide.
 
-### 5. Aesthetic: approximate shadcn, not generic AI
+### 5. Aesthetic: match the project's REAL theme, not generic AI
 
-The prototype should *look like the real app*. Hosts using this skill typically run shadcn/ui + Tailwind, so the prototype should approximate that visual vocabulary:
+The prototype should *look like the real app* — and the cheapest way to make the eventual shadcn conversion match is to build the prototype on the project's **actual** design tokens, not invented ones. Hosts using this skill typically run shadcn/ui + Tailwind.
 
-- **Tokens as CSS variables** in `:root` — pick neutral grays, a single accent, severity/state colors (success/warning/danger). HSL values, e.g. `--border: hsl(220 13% 91%)`, `--muted: hsl(210 40% 96%)`. Centralising tokens means the user can rebrand the whole prototype in one place.
-- **Type stack** — `system-ui, -apple-system, "Segoe UI", Roboto, sans-serif`, or Inter via Google Fonts if you want a closer match to shadcn defaults.
-- **Borders + corners** — 1px solid borders, `border-radius` between `6px` and `10px` (`rounded-md`–`rounded-lg`). No drop shadows on cards unless the host app uses them.
-- **Spacing** — generous, not cramped. 16–24px section spacing, 12–16px inner padding. Match the host app's density.
+- **Pull the project's real tokens first.** Before styling, read the project's theme source — `app/globals.css` / `src/app/globals.css` (the shadcn `:root` and `.dark` CSS variables: `--background`, `--foreground`, `--primary`, `--secondary`, `--muted`, `--accent`, `--border`, `--radius`, etc.) and `tailwind.config.*`. Copy those **exact** values into the prototype's `:root` so the prototype and the real UI share one palette, spacing scale, and radius. Only invent a token when the project genuinely lacks one, and label it (e.g. `/* NEW: not in project theme */`) so `build-from-prototype` knows it's new. This shared-token base is what lets the conversion reproduce the look without drift.
+- **Type stack** — use the project's font if you can find it (`next/font`, Tailwind `fontFamily`); otherwise `system-ui, -apple-system, "Segoe UI", Roboto, sans-serif`.
+- **Borders + corners** — use the project's `--radius`; 1px solid borders. No drop shadows on cards unless the host app uses them.
+- **Spacing** — match the host app's density (Tailwind spacing scale). Generous, not cramped — 16–24px section spacing, 12–16px inner padding.
 - **No purple gradient hero + Inter + three centered feature cards.** That is the visual signature of an AI-generated mockup and the user will read it as "wrong app."
 - **Sample data** — use realistic copy from the actual feature (the user's audit IDs, the user's brand names, the user's real domains). Don't lorem-ipsum it — the user is judging both the layout AND the content fit, and lorem-ipsum makes both harder.
 
@@ -143,7 +143,7 @@ Before declaring the prototype done and pinging the user, run this checklist men
 - [ ] Every BEFORE/AFTER callout has a one-sentence explanation, not just a colored border
 - [ ] Sample data is realistic (not lorem ipsum, not placeholder names)
 - [ ] Aesthetic approximates shadcn / the host app, not generic AI gradients
-- [ ] CSS tokens live in `:root` so re-skinning is possible
+- [ ] CSS tokens copied from the project's real theme (globals.css / tailwind config) into `:root`; any net-new token labeled
 - [ ] Semantic HTML — `<table>`, `<h2>`, etc.
 - [ ] No external runtime deps beyond Google Fonts via `<link>`
 - [ ] Opened for the user with `open /tmp/<slug>-prototype.html` (not just linked)
