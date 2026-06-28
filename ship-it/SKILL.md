@@ -27,7 +27,7 @@ questions on its own — and **loudly flags** either one that comes back "no":
 1. **Does a code-review system already exist for this codebase?**
 2. **Does a rulebook / coding-standards document already exist for this codebase?**
 
-These two answers reshape the rest of the run (which review mechanism is used, what the self-review
+These two answers reshape the rest of the run (which review mechanism Phase 6 uses, what the review
 checks against). Getting them wrong silently is the failure this skill exists to prevent — so when
 either is missing, the skill says so in plain language and offers to bootstrap it before continuing.
 
@@ -103,9 +103,9 @@ Record the result as one of:
 - **`none`** — no automated review system found.
 
 > **If `none`: FLAG IT.** Tell the human in plain language:
-> *"⚠ No code-review system detected in this repo (no review workflow / bot / review prompt). The
-> post-PR automated review loop won't run. I'll substitute an independent reviewer subagent before
-> opening the PR (Phase 4b). Want me to also bootstrap a real review system for this repo? (Phase 0e)"*
+> *"⚠ No code-review system detected in this repo (no review workflow / bot / review prompt). No
+> automated bot will review the PR. I'll run the review on the PR with an independent reviewer
+> subagent instead (Phase 6, Path C). Want me to also bootstrap a real review system for this repo? (Phase 0e)"*
 
 ### 0d. Detect the rulebook — and flag if absent
 
@@ -118,13 +118,13 @@ Scan for an existing rulebook / coding-standards source. Positive signals (colle
 - `.windsurfrules`, `.github/copilot-instructions.md`
 - Weak-but-useful signals: `.editorconfig`, ESLint/Prettier/Biome/Ruff configs, `tsconfig` strictness
 
-Record the rulebook as the **ordered list of files** the self-review will load as its source of
+Record the rulebook as the **ordered list of files** the review (Phase 6) will load as its source of
 truth (strongest first: explicit agent/cursor rules > CONTRIBUTING/docs > linters/configs).
 
 > **If no real rulebook exists** (only weak linter signals, or nothing at all): **FLAG IT.**
 > *"⚠ No rulebook / coding-standards doc detected (no CLAUDE.md, .cursor/rules, CONTRIBUTING.md,
-> etc.). My pre-PR self-review will fall back to a generic built-in checklist (below), which is
-> weaker than repo-tailored rules. Want me to bootstrap a tailored rulebook for this repo? (Phase 0e)"*
+> etc.). The PR review (Phase 6) will fall back to a generic built-in checklist (the appendix), which
+> is weaker than repo-tailored rules. Want me to bootstrap a tailored rulebook for this repo? (Phase 0e)"*
 
 ### 0e. Offer to bootstrap a missing review system / rulebook
 
@@ -146,8 +146,8 @@ The bootstrap sub-flow:
    - **Rulebook** — a `CLAUDE.md` (or `.cursor/rules/` set, matching whatever the repo already
      leans toward) capturing the conventions from step 1 + the invariants from step 2, including an
      **Always-BLOCKER** list and a **risk-tier paths** list specific to this codebase.
-   - **Review ruleset** — a concise checklist the pre-PR self-review and the reviewer subagent both
-     consume (can live inside the rulebook or as `docs/REVIEW.md`).
+   - **Review ruleset** — a concise checklist the PR review (the bot or the Phase 6 reviewer subagent)
+     consumes (can live inside the rulebook or as `docs/REVIEW.md`).
    - **Optional CI upgrade** — *offer* (don't impose) to scaffold a `/claude-review`-style GitHub
      Action workflow + prompt file. Call out that it needs API-key secrets and finishing setup the
      human does manually. Only scaffold this if they say yes.
@@ -160,7 +160,7 @@ visible in the final summary.
 
 ### 0f. Detect the toolchain (typecheck / lint / test)
 
-Auto-detect the verification commands so Phase 4/5 can run them. Look, in order, at:
+Auto-detect the verification commands so Phase 4 (sanity) and Phase 6 (the review loop) can run them. Look, in order, at:
 
 - `package.json` `scripts` (`typecheck`, `tsc`, `lint`, `test`, `build`) + the lockfile to pick the
   package manager (`pnpm-lock.yaml` → pnpm, `yarn.lock` → yarn, `package-lock.json` → npm, `bun.lockb` → bun)
@@ -263,113 +263,104 @@ the diff — same discipline, lighter form.
 
 ---
 
-## Phase 4 — Pre-PR review loop (run BEFORE opening the PR)
+## Phase 4 — Pre-PR sanity check (verification only — NOT code review)
 
-This is the most important phase. Do not open a PR until it reaches zero `BLOCKER`/`MAJOR`/`MINOR`
-findings. **This is a LOOP, capped at 3 iterations** — the cap is on *review cycles*, not commits
-(each cycle can produce many fix commits).
+There is **no pre-PR self-review.** Code review happens on the PR, after it's open, in Phase 6 —
+that review IS the review. Before opening the PR you only confirm it isn't broken:
 
-### 4a. Self-review against the detected rulebook
+- **Run the detected verification commands** (Phase 0f): typecheck must be clean; run lint/test if
+  present. Fix every error before continuing.
 
-1. **Run the detected verification commands** (Phase 0f): typecheck must be clean; run lint/test if
-   present. Fix every error before continuing.
-2. **Load the rulebook** detected in Phase 0d (or the freshly bootstrapped one) as the source of
-   truth. Read every file you changed and produce a private findings list:
-   `[SEVERITY] file:line — description — fix`.
-
-   Severity: `[BLOCKER]` (must fix before any PR) · `[MAJOR]` / `[MINOR]` (fix before opening PR) ·
-   `[NIT]` (surface in summary; judgment call on whether to fix).
-
-3. **If no rulebook was found and you're using the generic fallback**, review against this built-in
-   checklist (it's deliberately stack-agnostic — the repo-tailored rulebook is always better):
-
-   - **Secrets & safety** — no hardcoded secrets/API keys; no server-only credential used client-side;
-     no unsanitised HTML injection sink.
-   - **Auth & boundaries** — every new endpoint / server action / handler authenticates the caller,
-     checks authorization, scopes to the right tenant/owner, and validates its inputs.
-   - **Data integrity** — money/quantities use exact types (no float drift); multi-step writes that
-     must not partially apply are transactional/idempotent; concurrent writers are guarded.
-   - **Type discipline** — no new `any` / `@ts-ignore` / unchecked cast without a `// reason:`;
-     prefer `unknown` at external-data boundaries (and the equivalent in other languages).
-   - **Error handling** — failures are handled, not swallowed; retryable vs fatal are distinguished;
-     no empty catch blocks.
-   - **Queries & performance** — no unbounded queries (paginate/limit); no N+1 in hot paths; no
-     obvious accidental O(n²).
-   - **Consistency** — follows existing patterns in the file/module (naming, structure, the repo's
-     UI/styling primitives) rather than introducing a one-off style.
-   - **Docs sync** — if the change adds/removes/renames something the repo documents, update that doc
-     in the same PR.
-
-4. **Risk-tier enumeration** — for any changed file under a risk-tier path (from the rulebook, or by
-   the generic heuristic: auth, money/payments, migrations, background jobs, webhooks, external API
-   calls), answer explicitly: auth? authorization? tenant scope? inputs validated? And for
-   state-mutating writes: what does it write? multi-step? transactional? idempotent? concurrency
-   guard? failure mode if step N fails?
-
-### 4b. Independent reviewer subagent — REQUIRED when no Claude review bot exists
-
-If Phase 0c found **`none`** or **`other-bot`** (i.e. there's no `/claude-review` Claude bot to drive
-post-PR), spawn a **fresh `general-purpose` sub-agent as an independent reviewer** before opening the
-PR. Give it: the diff (`git diff <base>`), the rulebook file paths (or the generic checklist above),
-and the instruction to return findings as `[SEVERITY] file:line — description — fix` — and to be
-adversarial, not agreeable. Treat its `BLOCKER`/`MAJOR`/`MINOR` findings exactly like your own.
-
-This substitutes for the post-PR bot loop so the skill stays valuable in repos with no CI reviewer.
-(When a Claude bot *does* exist, this subagent pass is optional — the bot is the independent reviewer
-in Phase 6.)
-
-### 4c. Fix → commit → re-verify, looping
-
-For every `BLOCKER`/`MAJOR`/`MINOR` finding (from self-review or the subagent): fix it, commit it as
-a **separate follow-up commit** (do not amend) — `review (iter <N>): fix <severity> — <one-liner>` —
-and re-run typecheck/lint. NITs are tracked but not auto-fixed (judgment call). Record per-iteration
-counts. Break when zero `BLOCKER`/`MAJOR`/`MINOR` remain, or at iteration 3 (then document remaining
-findings in the PR body and proceed).
+Do **not** review the code here. Opening the PR (Phase 5) is what kicks off the review, and Phase 6
+drives it to a clean verdict.
 
 ---
 
 ## Phase 5 — Push & open the PR
 
-Only after Phase 4 reaches zero findings (or max iterations exhausted).
+After Phase 4's verification passes. There is **no pre-PR code-review gate** — opening the PR is
+what kicks off the review (Phase 6).
 
 1. **Sanity check:** typecheck clean; lint clean (if present); `git status --porcelain` empty;
    `git log <base>..HEAD --oneline` has ≥ 1 commit. If any fails, STOP and surface it.
 2. **Push:** `git push -u origin "$(git rev-parse --abbrev-ref HEAD)"`. Never `--force` automatically.
 3. **Open the PR** with the platform CLI (`gh pr create` on GitHub; adapt for GitLab/others if that's
    what the repo uses). Title is conventional-commits. Body includes: ≤ 5-bullet summary, the coverage
-   matrix, the self-review iteration table, **actual** verification output (not a placeholder), the
-   Linear link if a ticket exists, and a one-line risk note. If a PR already exists for the branch,
-   surface it with `gh pr view` instead of creating a duplicate.
+   matrix, **actual** verification output (not a placeholder), the Linear link if a ticket exists, and
+   a one-line risk note. If a PR already exists for the branch, surface it with `gh pr view` instead of
+   creating a duplicate.
 
 Include in the PR body any **flags raised in Phase 0** that the human declined to fix — e.g. *"Note:
-this repo has no automated review system; reviewed by an independent subagent pre-PR."*
+this repo has no automated review system; reviewed by an independent reviewer subagent on the PR."*
 
 ---
 
-## Phase 6 — Post-PR review loop (ONLY if a Claude review bot exists)
+## Phase 6 — Post-PR review loop (this IS the review — run it to completion, do NOT stop after one round)
 
-**Only run this phase if Phase 0c recorded `claude-bot`.** If it recorded `other-bot`, let that bot
-review on its own and skip to Phase 7. If `none`, the Phase 4b subagent already covered review — skip
-to Phase 7.
+This loop **replaces the old pre-PR self-review.** The review now happens on the open PR, and
+**driving it to a clean verdict is your job, not the human's.** Each round's findings live on the PR
+as comments; you read them, fix every one, push, and re-review.
 
-Drive the bot via PR comments and **wait event-driven, never by blind polling**:
+### ⛔ Loop invariant — the #1 thing this skill gets wrong
 
-1. Capture the baseline newest run id, trigger the review, then **background** a `gh run watch` on the
-   new run so the harness re-wakes you when it finishes; set one long `ScheduleWakeup` (~1200 s) as a
-   dead-man's-switch only.
-2. Read the verdict **from the machine-readable block** the review emits (parse JSON / the verdict
-   line — don't eyeball prose). Stopping condition: `0 BLOCKER · 0 MAJOR · 0 MINOR`.
-3. For each `BLOCKER`/`MAJOR`/`MINOR`: read the cited `file:line`, understand the rule it cites
-   (fetch the rule file if needed), fix, re-run typecheck, commit `fix(<scope>): address round-N
-   review findings`, then `git push` and re-trigger — **fix every finding in one push**, no
-   cherry-picking. Re-enter the watch in the same turn.
+The failure to prevent: the agent runs one review, then sits back and hands the result to the human.
+**That is a bug, not a checkpoint.** Once the PR is open you own the loop end to end:
 
-> ⚠ **Don't double-trigger.** If opening a PR already auto-runs the review (common config), do **not**
-> also post a `/claude-review` comment — that cancels and restarts the first run, wasting credits.
-> Comment-triggering is only for re-review after a `git push`.
+> review → read findings → fix EVERY finding → push → re-review → … → `0 BLOCKER · 0 MAJOR · 0 MINOR` → final review (Phase 7) → notify the human.
 
-**NITs are a judgment call:** small/focused PR with `approve_with_nits` → proceed; large or
-risk-tier PR → fix NITs, push, re-review. When in doubt, ask the human.
+You do not stop, summarize, or ask the human anything between rounds. The ONLY early-exit reasons: a
+`git push` fails or needs force (never force automatically), a fix is genuinely ambiguous and
+unresolvable from the repo + rulebook, or many rounds pass with no progress. In every other case,
+**ending your turn after triggering a review without an in-flight watch (or the next review pass
+already running) is the defect.**
+
+### Pick the path from Phase 0c, then loop until clean
+
+**Path A — `claude-bot` (a `/claude-review`-style Claude bot exists):**
+1. Capture the baseline run id; let the PR-open auto-run trigger the review, or post `/claude-review`
+   once if it doesn't auto-run. **Don't double-trigger** — if opening the PR already auto-runs the
+   review, do NOT also comment (it cancels and restarts the run, wasting credits).
+   ```bash
+   BEFORE=$(gh run list --workflow=<review-workflow>.yml --limit=1 --json databaseId -q '.[0].databaseId // 0')
+   ```
+2. **Wait by background watch, never blind polling.** Run this as a background Bash task
+   (`run_in_background: true`); when it exits the harness re-wakes you. Set ONE `ScheduleWakeup`
+   (~1200 s) as a dead-man's-switch only.
+   ```bash
+   WF=<review-workflow>.yml; RID=""
+   for i in $(seq 1 24); do
+     RID=$(gh run list --workflow="$WF" --limit=1 --json databaseId -q '.[0].databaseId')
+     [ -n "$RID" ] && [ "$RID" != "<BEFORE>" ] && break
+     sleep 5
+   done
+   if [ -z "$RID" ] || [ "$RID" = "<BEFORE>" ]; then echo "NO_NEW_RUN"; exit 1; fi
+   echo "watching review run $RID"; gh run watch "$RID" --exit-status
+   ```
+3. On wake, read the verdict from the bot's PR comment (parse the machine-readable block / verdict
+   line — don't eyeball prose). Count blocker/major/minor.
+4. **If `0 BLOCKER · 0 MAJOR · 0 MINOR`** → Phase 7. Otherwise fix EVERY finding (read the cited
+   `file:line`, fetch the rule, fix, re-run typecheck), commit `fix(<scope>): address round-N review
+   findings`, then capture a fresh `BEFORE`, `git push`, post `/claude-review`, and **re-arm the
+   background watch in the same turn.** Loop to step 3.
+
+**Path B — `other-bot` (a non-Claude reviewer like CodeRabbit):** it reviews on its own on push.
+After each push, watch for its review comments, read them, fix every actionable finding, push, and
+let it re-review. Loop until it raises nothing actionable, then Phase 7. Same invariant — don't stop
+after one round.
+
+**Path C — `none` (no review bot):** the review still happens on the PR, run by a subagent. Loop:
+1. Spawn a fresh `general-purpose` sub-agent as an **independent, adversarial reviewer.** Give it
+   `git diff <base>`, the rulebook file paths (or the generic checklist in the appendix), and ask for
+   findings as `[SEVERITY] file:line — description — fix`.
+2. **Post its findings as a PR comment** (`gh pr comment <pr> --body "…"`) so the review trail lives
+   on the PR, exactly like a bot would.
+3. **If `0 BLOCKER · 0 MAJOR · 0 MINOR`** → Phase 7. Otherwise fix every finding, commit
+   `fix(<scope>): address round-N review findings`, push, and **spawn the reviewer subagent again** on
+   the new diff. Loop until a round comes back clean.
+
+**NITs are a judgment call** (all paths): small/focused PR with only NITs → proceed; large or
+risk-tier PR → fix NITs too and re-review. Ask the human only about NITs — never as a way to pause the
+blocker/major/minor loop.
 
 ---
 
@@ -387,7 +378,7 @@ Then notify the human with exactly this structure:
 - **Branch:** `claude/<id>-<slug>`
 - **PR:** <URL>
 - **Linear:** <KEY-NNN> (if applicable)
-- **Review:** <bot rounds: N | independent subagent pre-PR | none — flagged>
+- **Review:** <bot rounds: N | independent reviewer subagent on the PR | none — flagged>
 - **Final review:** <posted ✅ | n/a — no review system in this repo>
 
 <If a review system / rulebook was missing and not bootstrapped, restate the flag here.>
@@ -413,11 +404,9 @@ Do not merge until you have read the review.
 [ ] Phase 1  — Workstreams identified (plan parsed if supplied); parallel sub-agents spawned
 [ ] Phase 2  — Granular commits by area; conventional-commits; off-limits paths respected
 [ ] Phase 3  — Coverage check: every TODO has diff evidence or a blocked reason
-[ ] Phase 4a — Verification clean; self-review vs rulebook (or generic fallback)
-[ ] Phase 4b — Independent reviewer subagent (REQUIRED when no Claude bot)
-[ ] Phase 4c — Fixes committed (review (iter N): prefix); looped to 0 BLOCKER/MAJOR/MINOR
+[ ] Phase 4  — Verification clean (typecheck/lint) — sanity only, NO pre-PR code review
 [ ] Phase 5  — Sanity-checked, pushed, PR opened; Phase-0 flags noted in PR body
-[ ] Phase 6  — Bot loop ONLY if claude-bot; verdict read from JSON; event-driven watch
+[ ] Phase 6  — Review driven to clean WITHOUT stopping after one round (bot / other-bot / reviewer subagent per Phase 0c); findings on the PR; background watch after every trigger; looped to 0 BLOCKER · 0 MAJOR · 0 MINOR
 [ ] Phase 7  — Final review/handoff; human notified; PR NOT merged by Claude
 ```
 
@@ -428,7 +417,9 @@ Do not merge until you have read the review.
 - Does NOT hardcode any repo path, command, framework, or MCP slug — all detected or asked.
 - Does NOT silently assume a review system or rulebook exists — it detects, flags, and offers to bootstrap.
 - Does NOT merge PRs, `--force` push, amend commits, or open duplicate PRs.
-- Does NOT skip Phase 3 (coverage), Phase 4 (pre-PR review), or the review/handoff gate.
+- Does NOT skip Phase 3 (coverage), Phase 6 (post-PR review loop), or the final-review/handoff gate.
+- Does NOT do a pre-PR self-review — code review happens on the open PR (Phase 6).
+- Does NOT stop after one review round to hand back to the human — it drives Phase 6 to a clean verdict autonomously (the loop invariant).
 - Does NOT block delivery when a tracker / review bot / rulebook is missing — it degrades gracefully and flags.
 - Does NOT write bootstrapped review-system files without explicit approval, and writes them into the
   TARGET repo, never into this skill.
@@ -440,6 +431,38 @@ Do not merge until you have read the review.
 The repo-specific delivery skills it descends from worked well but were unportable: each baked in one
 repo's Linear slug, review workflow, rulebook layout, and toolchain. Dropped into a different
 codebase they'd reference files that don't exist and commands that don't run. ship-it keeps the
-proven discipline — granular commits, coverage check, a hard pre-PR review loop, an event-driven
-post-PR loop, a final gate, and "the human merges" — but earns portability by **detecting the repo's
-review system and rulebook instead of assuming them, and saying so out loud when they're not there.**
+proven discipline — granular commits, coverage check, a post-PR review-and-fix loop driven to a clean
+verdict (never stopping after one round), a final gate, and "the human merges" — but earns
+portability by **detecting the repo's review system and rulebook instead of assuming them, and saying
+so out loud when they're not there.**
+
+---
+
+## Appendix — generic review checklist (fallback when there's no rulebook)
+
+When Phase 0d found no rulebook (and none was bootstrapped), the reviewer — the Path C subagent, or
+you when judging a bot's findings — reviews against this deliberately stack-agnostic checklist. A
+repo-tailored rulebook is always better; this is the floor, not the ceiling.
+
+- **Secrets & safety** — no hardcoded secrets/API keys; no server-only credential used client-side;
+  no unsanitised HTML injection sink.
+- **Auth & boundaries** — every new endpoint / server action / handler authenticates the caller,
+  checks authorization, scopes to the right tenant/owner, and validates its inputs.
+- **Data integrity** — money/quantities use exact types (no float drift); multi-step writes that must
+  not partially apply are transactional/idempotent; concurrent writers are guarded.
+- **Type discipline** — no new `any` / `@ts-ignore` / unchecked cast without a `// reason:`; prefer
+  `unknown` at external-data boundaries (and the equivalent in other languages).
+- **Error handling** — failures are handled, not swallowed; retryable vs fatal are distinguished; no
+  empty catch blocks.
+- **Queries & performance** — no unbounded queries (paginate/limit); no N+1 in hot paths; no obvious
+  accidental O(n²).
+- **Consistency** — follows existing patterns in the file/module (naming, structure, the repo's
+  UI/styling primitives) rather than introducing a one-off style.
+- **Docs sync** — if the change adds/removes/renames something the repo documents, update that doc in
+  the same PR.
+
+**Risk-tier enumeration** — for any changed file under a risk-tier path (from the rulebook, or by the
+generic heuristic: auth, money/payments, migrations, background jobs, webhooks, external API calls),
+answer explicitly: auth? authorization? tenant scope? inputs validated? And for state-mutating
+writes: what does it write? multi-step? transactional? idempotent? concurrency guard? failure mode if
+step N fails?
