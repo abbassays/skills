@@ -1,6 +1,7 @@
 # Private skills — kept as top-level dirs so Claude Code discovers them,
 # but never tracked. Add a line per private skill.
 draft-message/
+draft-email/
 linear-budget-report/
 
 # macOS

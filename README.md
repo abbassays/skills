@@ -44,6 +44,12 @@ If you find something useful, clone the skill directory you want and drop it int
 | [find-skills](find-skills/SKILL.md) | Helps discover and install agent skills when you ask "how do I do X", "find a skill for X", or want to extend Claude's capabilities. |
 | [setup-claude-sounds](setup-claude-sounds/SKILL.md) | Wires custom per-event sound pools to Claude Code lifecycle hooks on macOS — personalised audio for SessionStart, Stop, Notification, and more, with headphone-friendly volume cap. |
 
+### Communication
+
+| Skill | Description |
+|---|---|
+| [human-email](human-email/SKILL.md) | Drafts client/team emails that read like a sharp human wrote them, not an AI — professional structure, no fluff, and a banned-AI-tells list. Works with neutral defaults out of the box, and reads an optional personal voice profile (`~/.config/human-email/voice.md`) so it sounds like you. Print-only. |
+
 ---
 
 ## How to use a skill
@@ -98,6 +104,8 @@ skills/
 │   ├── scripts/
 │   └── templates/
 ├── find-skills/
+│   └── SKILL.md
+├── human-email/
 │   └── SKILL.md
 ├── interview-me/
 │   └── SKILL.md
