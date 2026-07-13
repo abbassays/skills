@@ -1,150 +1,199 @@
 ---
 name: plain-english
-description: "Explain how something works in plain English, as data and flow rather than code. Use when the user asks 'how does X work', 'explain this in plain english', 'what's actually happening here', 'walk me through this without the code', 'explain like I'm not reading the code', or asks any technical question they want a real mental model of (a codebase feature, a system, or a general concept like OAuth / queues / vector DBs). Explains via entities and tables, what data moves where, and step-by-step flow — it names real tables, services, and endpoints but NEVER walks through functions or signatures. Assumes a competent engineer who simply hasn't read this code. Stays in chat as text (use diagram-walkthrough instead if the user wants a visual Mermaid HTML file)."
+description: "Explain something technical the way you'd explain it to a sharp colleague across the desk: as a short story in plain words, with real examples, no tables, no jargon, and no code tour. Use when the user asks 'how does X work', 'explain this in plain english', 'what's actually happening', 'no jargon', 'talk me through it without the code', 'explain it like a human', or when a technical explanation has turned into a wall of jargon and they push back. Also the right skill when explaining your OWN broken work — own the mistake plainly and land the one decision they need to make. Explains via what the data is and where it moves, never via which function calls which. Assumes a competent engineer who simply hasn't read this code. Stays in chat (use diagram-walkthrough if they want a visual Mermaid file)."
 user-invocable: true
 ---
 
-# Plain English — understand it without reading the code
+# Plain English — explain it like a person, not a document
 
-Give the user a **correct mental model** of how something works, in plain English, built out of
-**data and flow** rather than code.
+The user is a competent engineer. They can read code. They haven't, and they don't want to. They
+want to actually *understand* the thing — and they want it the way a smart friend would explain it,
+leaning back in their chair, not the way a spec would.
 
-The user is a competent software engineer. They can read code — they just haven't, and they don't
-want to. What they want is to genuinely understand the thing: what data exists, where it moves, what
-guarantees hold, and where it can bite them. Not a tour of the source files.
-
----
-
-## The two hard rules
-
-### 1. Data and flow, never functions
-Explain in terms of **entities, tables, services, and the path data takes through them**. You may
-name real things — `orders`, `processed_events`, the Stripe webhook, the `/checkout` endpoint — that
-makes it concrete and lets them connect it to reality.
-
-**Never** explain via functions. No "`createOrder()` calls `validateCart()` which returns…". No
-signatures, no call stacks, no file-by-file walkthrough. If your sentence contains a function name,
-rewrite it as what the data does.
-
-> ❌ "The `handleWebhook` function checks `isProcessed()` then calls `markPaid()`."
-> ✅ "When Stripe calls back, we first check whether we've already seen that event. If it's new, we mark the order paid."
-
-### 2. Ground it in reality before you explain it
-**If the question is about this codebase**, read the actual code, schema, and migrations **first**.
-The explanation must describe what the code really does, not a plausible-sounding version of it. But
-what you read never leaks into the output as function-level detail — you read code, you write data
-flow.
-
-If you're unsure about a step after reading, say so plainly ("I couldn't tell whether retries are
-capped — worth checking") rather than inventing a confident answer.
-
-**If it's a general technical question** (how does OAuth work, what's a vector DB, why use a queue),
-no repo reading needed. Same shape, same plain English.
+Most technical explanations fail not because they're wrong but because they're **formatted instead
+of spoken**. A table is not an explanation. A section header is not an explanation. A story with a
+concrete example is an explanation.
 
 ---
 
-## Calibration: who you're talking to
+## The voice is most of the skill
 
-- **Don't explain fundamentals.** They know what a database, an API, a cache, and a transaction are.
-  Explaining those is condescending and wastes the screen.
-- **Do explain this system's specifics.** Why the order row is written *before* payment. What
-  `processed_events` is actually protecting against. Which guarantee would break if step 4 failed.
-- **Simple words, real concepts.** Plain English is about the *wording*, not about dumbing down the
-  ideas. "Both happen or neither does" instead of "the operation is atomic" is good. Pretending
-  atomicity isn't the point is not.
-- **Say why, not just what.** The value is in the reasons: *why* is the order pending first, *why*
-  is the decrement in the same transaction. That's what turns description into understanding.
+Write like you're talking. Short paragraphs. Plain words. Real values. Land the "so what."
+
+If someone read your answer out loud and it sounded like a document being recited, you failed.
 
 ---
 
-## The structure
+## Hard rules
+
+### 1. No tables. Ever.
+If you're reaching for a markdown table, you're organizing instead of explaining. Say it in
+sentences. (This does **not** mean drop the data — see rule 5. It means *speak* the data instead of
+tabulating it.)
+
+### 2. No formal section headers
+Don't write `**The data**` / `**The flow**` / `**Where the truth lives**`. Use conversational bold
+lead-ins that read like things a person would actually say:
+
+> **What the check was supposed to do.**
+> **Here's the bug.**
+> **The fix, in plain terms:**
+> **The thing that trips people up:**
+> **Where you actually stand:**
+
+The lead-in is a sentence, not a label.
+
+### 3. No jargon
+No "idempotent", "atomic", "entity", "invariant", "deterministic". If a term is genuinely
+unavoidable, translate it in the same breath: *"both happen or neither does"* beats "atomic". You
+are simplifying the **words**, never the **ideas** — the concepts stay exactly as sharp.
+
+### 4. No functions, no code tour
+Never "`handleWebhook()` calls `isProcessed()` which returns…". No signatures, no call stacks, no
+file-by-file walkthrough. Explain what the **data** does, not what the code does.
+
+### 5. Data and flow, spoken
+The substance is still: what exists, where it moves, what's guaranteed. You may name real things —
+`orders`, the Stripe callback, the `/checkout` endpoint — that keeps it concrete. You just say it in
+prose: *"the moment you hit pay, we save a row that says someone is trying to buy these three things,
+and mark it unpaid."*
+
+### 6. Show real values
+Abstract description doesn't click. A concrete example does. Put actual strings, actual rows, actual
+numbers in a small code block and point at the part that matters:
 
 ```
-<flow line>              ← only when there's a real data path. skip it for pure concepts.
-**What it is**           ← one or two sentences. what job does this do?
-**The data**             ← the entities/tables and what each holds. a table is usually clearest.
-**The flow, step by step** ← numbered. what happens, in order, in plain English.
-**Where the truth lives** ← which store is authoritative for what. who owns the real answer.
-**Gotchas**              ← the surprises. what looks like a bug but isn't, and what actually is one.
+blue widgets austin texas
+blue widgets denver colorado
+             ^^^^^^ that's the bit that changes. that's the thing we care about.
 ```
 
-**The flow line** goes first when the thing has an actual path through it — an arrow sketch that
-shows the shape before the detail:
+### 7. Ground it before you explain it
+If the question is about this codebase, **read the real code and schema first**. The explanation must
+describe what's actually there, not a plausible-sounding version. What you read never leaks out as
+function-level detail — you read code, you speak data. If you're unsure after reading, say so
+("I couldn't tell whether retries are capped, worth checking") rather than inventing confidence.
 
-```
-you → orders(pending) → Stripe → [you pay] → Stripe calls back
-   → seen this event before? → yes: stop
-                             → no: orders(paid) + inventory−  (one transaction)
-```
+For general technical questions (OAuth, queues, vector DBs), no repo reading needed. Same voice.
 
-Skip the flow line when there isn't a flow (a conceptual question, a data-model question, a "why is
-it designed this way" question). Don't force an arrow diagram onto something static.
-
-**Drop a section if it's genuinely empty**, but don't drop **Gotchas** unless there truly are none —
-the gotchas are usually the most valuable part.
+### 8. Don't explain fundamentals
+They know what a database, an API, a cache, and a transaction are. Explaining those is condescending.
+Explain *this system's* specifics: why the order row is written before the payment, what that dedupe
+check is actually protecting against.
 
 ---
 
-## Worked example
+## The shape (a spine, not a template)
 
-Question: *"how does checkout actually work?"*
+1. **One sentence, up front.** The whole thing, before any detail. Then stop and let it land.
+2. **The story.** What it's meant to do → how it actually does it → where the interesting or broken
+   part is. Cause and consequence, in order.
+3. **A concrete example** that makes it click. Real values.
+4. **Name the essence in one line.** The single sentence that, if they remember nothing else, is the
+   thing. *"Both problems are the same mistake: I asked a question, got a garbage answer, and trusted it."*
+5. **Where that leaves them.** What works, what doesn't, what it means for them.
+6. **The one decision**, if there is one. Give a recommendation — especially if they're frustrated.
 
-```
-you → orders(pending) → Stripe → [you pay] → Stripe calls back
-   → seen this event before? → yes: stop
-                             → no: orders(paid) + inventory−  (one transaction)
-```
-
-**What it is**
-Checkout turns a cart into a paid order without ever losing money or overselling stock.
-
-**The data**
-
-| Thing | What it holds |
-|---|---|
-| `orders` | one row per checkout attempt; a status (pending → paid) and a total in integer cents |
-| `order_items` | the lines in that order, and how much stock each one takes |
-| `inventory` | how many of each item are left |
-| `processed_events` | every Stripe event id already handled, so none is handled twice |
-
-**The flow, step by step**
-1. You hit pay. We immediately write an `orders` row as `pending`. Nothing is charged yet.
-2. We ask Stripe to start a payment, tagged with that order's id.
-3. You type your card in on Stripe's side. We're not involved.
-4. Stripe calls us back saying the payment succeeded. The callback carries the order id and an event id.
-5. We check `processed_events`. If we've seen that event id before, we stop. That's what makes a duplicate callback harmless.
-6. In one transaction: flip the order to `paid` **and** subtract from `inventory`. Both happen, or neither does.
-
-**Where the truth lives**
-Money truth is `orders`, in whole cents, never decimals. Stock truth is `inventory`. Whether the card
-actually charged is Stripe's truth — our job is only to reflect it.
-
-**Gotchas**
-- The order row exists *before* payment, so `pending` rows that never become `paid` are normal. Those
-  are abandoned checkouts, not bugs.
-- Refunds don't use this path yet and still write decimal amounts, so refund totals can drift from
-  order totals by tiny amounts until that's migrated.
+Not every question needs all six. A "how does OAuth work" question has no decision at the end. Use
+what fits; never pad to hit the shape.
 
 ---
 
-## Depth and follow-ups
+## When you're explaining your own broken work
 
-- **Default depth:** enough to act on and reason about — roughly one to two screens. Not a book.
-- If they want more, they'll say "go deeper" — then expand the flow into more steps, or add a second
-  layer (error paths, retries, edge cases). Still no functions.
-- If they want a **visual**, hand off to `diagram-walkthrough`, which produces a clickable Mermaid
-  HTML file. This skill stays in chat.
+This is where most explanations go dishonest. Don't.
+
+- **Own it flatly.** "My guard was wrong. It rejected good work." Not "there appears to be an
+  inconsistency in the validation layer."
+- **Say what it cost them.** "That's your 5 failed pages." Connect the bug to the damage they saw.
+- **Credit their insight when they had one.** "Your point, which is the smart one: it's not even
+  about cities."
+- **Give them the honest way out.** If ripping it out is the sane move, say so.
+
+---
+
+## Worked example — the target voice
+
+> **One sentence: I built a safety check that's broken, and it's throwing away good work.**
+>
+> That's it. That's the whole thing.
+>
+> **What the check was supposed to do.** You complained that the Austin page had content about
+> Denver. So I added a guard: before we save the article, make sure it's actually about the right city.
+>
+> **How the guard figures out "the right city."** It looks at the URL, `blue-widgets-austin-texas`,
+> and tries to pull the city out of it. Simple idea.
+>
+> **Here's the bug.** My code grabs too many words. Instead of pulling out `Austin`, it pulls out
+> `Blue Widgets Austin` and decides *that's* the city name.
+>
+> So the model writes a perfectly good article about Austin. My guard reads it and says: "This says
+> Austin. But I expected 'Blue Widgets Austin.' Doesn't match. REJECT."
+>
+> That's your 5 failed pages. The articles were fine. My guard was wrong. It rejected good work.
+>
+> **The fix, in plain terms:** stop parsing anything. Just line the sibling pages up next to each
+> other and look at what's different:
+>
+> ```
+> blue widgets austin texas
+> blue widgets denver colorado
+>              ^^^^^^ that's the bit that changes. that's what we care about.
+> ```
+>
+> No rules about cities. No guessing. Whatever changes between siblings is the thing that makes this
+> page unique — and if nothing changes, the answer is "nothing", and the guard shuts up instead of
+> firing garbage.
+>
+> **Where you actually stand.** The big refactor works. The two little guards I bolted on top are
+> broken, and they're what nuked your test.
+>
+> **The one decision I need from you.** Rip the guards out for now (back to how it worked before,
+> nothing gets rejected, you can test everything else), or fix them properly with the sibling
+> comparison, which is about a day. If you're losing patience: rip them out. They were a bonus
+> feature and right now they're doing more harm than good.
+
+Notice what's *not* there: no table, no "Overview / Architecture / Data Model" headers, no jargon,
+no function names. And notice what is: a thesis, a story, a real example, the mistake named in one
+line, and a decision.
+
+---
+
+## Worked example — a plain "how does it work" question
+
+Same voice, no bug, no decision at the end.
+
+> **One sentence: checkout writes the order down before it takes your money, so a payment can never
+> arrive for an order that doesn't exist.**
+>
+> **The order comes first.** The moment you hit pay, we save a row saying "someone is trying to buy
+> these three things" and mark it unpaid. Nothing has been charged yet.
+>
+> **Then Stripe takes over.** We hand Stripe that order's id and get out of the way. You type your
+> card in on their page, not ours.
+>
+> **Then Stripe calls us back** to say the payment went through, and hands us back that order id.
+> Before we believe it, we check whether we've already heard about this exact payment. Stripe will
+> happily tell us twice, and acting on it twice would take the stock twice.
+>
+> **The last bit is the important bit.** Marking the order paid and taking the items out of stock
+> happen together, as one move. Both, or neither. If we marked it paid but failed to take the stock,
+> we'd sell the same last unit to two people.
+>
+> **The thing that trips people up:** unpaid order rows are normal, not bugs. They're abandoned carts.
 
 ---
 
 ## Self-check before answering
 
-- [ ] For a codebase question: read the real code/schema first; the explanation matches what's actually there
-- [ ] Zero function names, signatures, or call-stack walkthroughs in the output
-- [ ] Real tables/services/endpoints are named, so it connects to their reality
-- [ ] Flow line included when there's an actual data path; skipped when there isn't
-- [ ] Explains **why**, not just what
-- [ ] No condescending explanations of fundamentals (what a DB/API/transaction is)
-- [ ] Gotchas section present and genuinely useful
-- [ ] Anything uncertain is flagged as uncertain, not guessed confidently
-- [ ] Plain wording, real concepts — simplified language, not simplified ideas
+- [ ] Zero markdown tables
+- [ ] Zero formal section headers — the lead-ins read like a person talking
+- [ ] Zero jargon (or translated in the same breath)
+- [ ] Zero function names, signatures, or call stacks
+- [ ] Opens with one blunt sentence that is the whole thing
+- [ ] There's at least one concrete example with real values
+- [ ] The essence is named in a single sentence somewhere
+- [ ] For a codebase question: the real code was read first, and uncertainty is flagged, not guessed
+- [ ] If it's my own broken work: I owned it plainly and said what it cost them
+- [ ] If there's a decision, it's stated clearly with a recommendation
+- [ ] Read it back — does it sound like a person talking, or a document being recited?

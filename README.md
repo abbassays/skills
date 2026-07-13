@@ -24,7 +24,7 @@ If you find something useful, clone the skill directory you want and drop it int
 
 | Skill | Description |
 |---|---|
-| [plain-english](plain-english/SKILL.md) | Explains how something works as **data and flow**, in plain English, never as a function-by-function code tour — entities/tables, the step-by-step path data takes, where the truth lives, and the gotchas. Reads the real code first so it's grounded. Works for codebase questions and general technical ones (OAuth, queues, vector DBs). Stays in chat. |
+| [plain-english](plain-english/SKILL.md) | Explains something technical the way a sharp colleague would, out loud: one blunt sentence, then a short story with real examples. **No tables, no section headers, no jargon, no code tour** — data and flow, spoken. Reads the real code first so it's grounded, owns its own mistakes plainly, and lands the one decision you need to make. Works for codebase questions and general technical ones (OAuth, queues, vector DBs). |
 | [diagram-walkthrough](diagram-walkthrough/skill.md) | Generates a self-contained HTML file with an interactive, clickable Mermaid diagram (flowchart or ER) that explains how a codebase feature, flow, architecture, or schema works — a visual mental model readable in under 2 minutes. |
 | [excalidraw-diagram-generator](excalidraw-diagram-generator/SKILL.md) | Generates Excalidraw diagrams from natural-language descriptions — flowcharts, relationship diagrams, mind maps, and system architectures — outputting `.excalidraw` JSON files that open directly in Excalidraw. |
 
