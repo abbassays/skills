@@ -20,10 +20,11 @@ If you find something useful, clone the skill directory you want and drop it int
 | [jsdoc-typescript-docs](jsdoc-typescript-docs/SKILL.md) | Documents TypeScript code with JSDoc comments and generates API documentation (TypeDoc-style). Use for "JSDoc", "code documentation", "API docs", or "inline documentation" requests. |
 | [vibe-estimate](vibe-estimate/SKILL.md) | Produces a tight hourly estimate for a coding task calibrated to an AI-augmented workflow — outputs an `Elapsed · billable` range plus the 2–4 dependencies that move it, no planning essay. |
 
-### Diagrams & visualization
+### Understanding & visualization
 
 | Skill | Description |
 |---|---|
+| [plain-english](plain-english/SKILL.md) | Explains how something works as **data and flow**, in plain English, never as a function-by-function code tour — entities/tables, the step-by-step path data takes, where the truth lives, and the gotchas. Reads the real code first so it's grounded. Works for codebase questions and general technical ones (OAuth, queues, vector DBs). Stays in chat. |
 | [diagram-walkthrough](diagram-walkthrough/skill.md) | Generates a self-contained HTML file with an interactive, clickable Mermaid diagram (flowchart or ER) that explains how a codebase feature, flow, architecture, or schema works — a visual mental model readable in under 2 minutes. |
 | [excalidraw-diagram-generator](excalidraw-diagram-generator/SKILL.md) | Generates Excalidraw diagrams from natural-language descriptions — flowcharts, relationship diagrams, mind maps, and system architectures — outputting `.excalidraw` JSON files that open directly in Excalidraw. |
 
@@ -41,6 +42,7 @@ If you find something useful, clone the skill directory you want and drop it int
 | Skill | Description |
 |---|---|
 | [interview-me](interview-me/SKILL.md) | Extracts what you actually want via batched multiple-choice interviewing (2–4 questions per round) until ~95% confident about intent — used before any plan or code when an ask is underspecified. |
+| [tldr](tldr/SKILL.md) | Compresses a wall of text into a ~15-second structured summary, on a fixed spine: Bottom line → (middle, adapts to the message type) → What you need to do → Watch out. Summarizes the last message by default, or the whole session on request. Compresses only — never adds new information. |
 | [find-skills](find-skills/SKILL.md) | Helps discover and install agent skills when you ask "how do I do X", "find a skill for X", or want to extend Claude's capabilities. |
 | [setup-claude-sounds](setup-claude-sounds/SKILL.md) | Wires custom per-event sound pools to Claude Code lifecycle hooks on macOS — personalised audio for SessionStart, Stop, Notification, and more, with headphone-friendly volume cap. |
 
@@ -111,12 +113,16 @@ skills/
 │   └── SKILL.md
 ├── jsdoc-typescript-docs/
 │   └── SKILL.md
+├── plain-english/
+│   └── SKILL.md
 ├── setup-claude-sounds/
 │   └── SKILL.md
 ├── setup-vercel-redeploy/
 │   ├── SKILL.md
 │   └── templates/
 ├── ship-it/
+│   └── SKILL.md
+├── tldr/
 │   └── SKILL.md
 ├── trigger-cloud-to-selfhost/
 │   └── SKILL.md
