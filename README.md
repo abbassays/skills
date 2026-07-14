@@ -13,6 +13,7 @@ If you find something useful, clone the skill directory you want and drop it int
 | Skill | Description |
 |---|---|
 | [ship-it](ship-it/SKILL.md) | Portable, any-codebase end-to-end delivery workflow — takes any task to a merge-ready PR. Auto-detects whether the repo has a code-review system and a rulebook, loudly flags either if missing, and offers to bootstrap one. Zero hardcoded repo paths, commands, or MCP slugs. |
+| [create-linear-ticket](create-linear-ticket/SKILL.md) | Creates a Linear ticket that's actually scheduled — **never a Backlog ghost**. Detects the project's Linear MCP, picks the cycle by measuring the current cycle's remaining load (Up Next if it fits this cycle, Todo if it goes to the next), always asks for an hourly estimate, infers assignee/labels/project/due date, sets a billing-month label only where one exists and only for work already started, and confirms the full ticket before creating it. ship-it delegates to it. |
 | [automated-pr-review](automated-pr-review/SKILL.md) | Claude-powered PR review system — three-job GitHub Actions workflow (automated review, pre-merge PM report, on-demand agent) with project-aware context via product-knowledge and coding-standards docs. |
 | [ui-prototype-first](ui-prototype-first/SKILL.md) | A visual sign-off gate — builds a self-contained static HTML prototype (with BEFORE/AFTER callouts) and opens it in the browser before any React/TSX is written, hard-blocking component edits until you approve the design. Built on the project's real theme tokens so the conversion matches. |
 | [build-from-prototype](build-from-prototype/SKILL.md) | Converts an approved HTML prototype into matching React/Next.js + shadcn UI, treating the prototype as a hard guard. Reuse-first (reuse/refactor existing components before composing primitives; new is last resort) and runs a render → screenshot → compare → fix loop so the UI doesn't drift from the design. |
@@ -85,6 +86,8 @@ skills/
 ├── claude-gateway/
 │   └── SKILL.md
 ├── create-linear-bot/
+│   └── SKILL.md
+├── create-linear-ticket/
 │   └── SKILL.md
 ├── dev-codebase-audit/
 │   ├── SKILL.md

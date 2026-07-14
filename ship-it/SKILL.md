@@ -47,9 +47,12 @@ variants `list_issues` / `save_issue` / `get_issue`). Use whichever is connected
 
   > "Should I create a Linear ticket for this, or does one already exist? If it exists, share the ID."
 
-  - **If creating:** call the detected `…save_issue` tool — title in `<type>(<scope>): <subject>`
-    form (e.g. `feat(...)`, `fix(...)`, `refactor(...)`), description summarising intent +
-    acceptance criteria. Branch name derives from the ticket ID: `claude/<key-nnn>-<short-slug>`.
+  - **If creating: delegate to the `create-linear-ticket` skill.** Do NOT hand-roll a bare
+    `…save_issue` call here — that's how tickets end up in Backlog with no status, no cycle, no
+    owner, and no estimate. `create-linear-ticket` picks the cycle by measuring current-cycle load,
+    sets a real status (Up Next / Todo, never Backlog), asks for the hourly estimate, and confirms
+    the whole ticket with the human before creating it. Branch name derives from the resulting ticket
+    ID: `claude/<key-nnn>-<short-slug>`.
   - **If it exists:** fetch it via the detected `…get_issue` tool before proceeding — the
     acceptance criteria are the definition of done. Branch name: `claude/<key-nnn>-<short-slug>`.
   - **If skipping:** branch name is `claude/<short-slug>` (kebab-case, ≤ 5 words).
