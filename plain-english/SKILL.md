@@ -1,6 +1,6 @@
 ---
 name: plain-english
-description: "Explain something technical the way you'd explain it to a sharp colleague across the desk: as a short story in plain words, with real examples, no tables, no jargon, and no code tour. Use when the user asks 'how does X work', 'explain this in plain english', 'what's actually happening', 'no jargon', 'talk me through it without the code', 'explain it like a human', or when a technical explanation has turned into a wall of jargon and they push back. Also the right skill when explaining your OWN broken work — own the mistake plainly and land the one decision they need to make. Explains via what the data is and where it moves, never via which function calls which. Assumes a competent engineer who simply hasn't read this code. Stays in chat (use diagram-walkthrough if they want a visual Mermaid file)."
+description: "Explain something technical the way you'd explain it to a sharp colleague across the desk: as a short story in plain words, with real examples, no tables, no jargon, and no code tour. Use when the user asks 'how does X work', 'explain this in plain english', 'what's actually happening', 'no jargon', 'talk me through it without the code', 'explain it like a human', or when a technical explanation has turned into a wall of jargon and they push back. Also the right skill when explaining your OWN broken work — own the mistake plainly and land the one decision they need to make. Explains via what the data is and where it moves, never via which function calls which. KEEPS IT SHORT — paragraphs are 1-3 sentences, bullets over prose walls, the whole answer fits on one screen (~200-250 words); it only goes longer if asked to 'go deeper'. Assumes a competent engineer who simply hasn't read this code. Stays in chat (use diagram-walkthrough if they want a visual Mermaid file)."
 user-invocable: true
 ---
 
@@ -24,12 +24,34 @@ If someone read your answer out loud and it sounded like a document being recite
 
 ---
 
+## Keep it SHORT — this is a hard constraint, not a preference
+
+Long paragraphs are worse than tables. A wall of prose is just a wall.
+
+- **Paragraphs are 1-3 sentences. Never more.** If a paragraph hits four, split it or cut it.
+- **One idea per paragraph.** Then a line break. White space is doing real work here.
+- **The whole answer fits on one screen.** Target ~200-250 words. Hard ceiling ~400, and only if the
+  thing genuinely needs it.
+- **Fragments are fine.** "That's it. That's the whole thing." Talk, don't compose.
+- **Cut any sentence that doesn't change their understanding.** Setup, throat-clearing, restating what
+  you just said, and "as mentioned above" all go.
+- **Short bullets are allowed and encouraged.** Banning tables does not mean everything becomes prose.
+  If you're listing three things, list them — 3-8 words each, not sentences.
+- **Skimmable:** they should be able to read only the bold lead-ins and still get it.
+
+**Default to short.** If they want more, they'll say "go deeper" — and that's the only time you expand.
+
+---
+
 ## Hard rules
 
 ### 1. No tables. Ever.
 If you're reaching for a markdown table, you're organizing instead of explaining. Say it in
 sentences. (This does **not** mean drop the data — see rule 5. It means *speak* the data instead of
 tabulating it.)
+
+**"No tables" does not mean "everything must be prose."** Short bullets are good. A wall of
+paragraphs is exactly as unreadable as a table, just slower. When you're listing things, use bullets.
 
 ### 2. No formal section headers
 Don't write `**The data**` / `**The flow**` / `**Where the truth lives**`. Use conversational bold
@@ -186,6 +208,10 @@ Same voice, no bug, no decision at the end.
 
 ## Self-check before answering
 
+- [ ] **No paragraph is longer than 3 sentences** — count them
+- [ ] **The whole answer fits on one screen** (~200-250 words, hard ceiling ~400)
+- [ ] Bullets used where I'm listing things, instead of a prose wall
+- [ ] Every sentence earns its place — nothing restates, sets up, or pads
 - [ ] Zero markdown tables
 - [ ] Zero formal section headers — the lead-ins read like a person talking
 - [ ] Zero jargon (or translated in the same breath)
