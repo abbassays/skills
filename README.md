@@ -13,6 +13,7 @@ If you find something useful, clone the skill directory you want and drop it int
 | Skill | Description |
 |---|---|
 | [ship-it](ship-it/SKILL.md) | Portable, any-codebase end-to-end delivery workflow — takes any task to a merge-ready PR. Auto-detects whether the repo has a code-review system and a rulebook, loudly flags either if missing, and offers to bootstrap one. Zero hardcoded repo paths, commands, or MCP slugs. |
+| [deploy-and-merge](deploy-and-merge/SKILL.md) | Ships a PR to production in the right order for a Next.js + Supabase + Trigger.dev + Vercel stack: Supabase migrations → Trigger.dev redeploy → merge into main (schema must be live before Vercel auto-deploys on merge). Each step runs only if that PR actually touches it. Vercel/preview checks are never blockers. Stops loudly on failure and never auto-rolls-back a prod migration. Opt-in sync step fast-forwards local `main` without checking it out. |
 | [create-linear-ticket](create-linear-ticket/SKILL.md) | Creates a Linear ticket that's actually scheduled — **never a Backlog ghost**. Detects the project's Linear MCP, picks the cycle by measuring the current cycle's remaining load (Up Next if it fits this cycle, Todo if it goes to the next), always asks for an hourly estimate, infers assignee/labels/project/due date, sets a billing-month label only where one exists and only for work already started, and confirms the full ticket before creating it. ship-it delegates to it. |
 | [automated-pr-review](automated-pr-review/SKILL.md) | Claude-powered PR review system — three-job GitHub Actions workflow (automated review, pre-merge PM report, on-demand agent) with project-aware context via product-knowledge and coding-standards docs. |
 | [ui-prototype-first](ui-prototype-first/SKILL.md) | A visual sign-off gate — builds a self-contained static HTML prototype (with BEFORE/AFTER callouts) and opens it in the browser before any React/TSX is written, hard-blocking component edits until you approve the design. Built on the project's real theme tokens so the conversion matches. |
@@ -100,6 +101,8 @@ skills/
 │           ├── meeting-agenda.md
 │           ├── full-audit.md
 │           └── ratings-card.md
+├── deploy-and-merge/
+│   └── SKILL.md
 ├── diagram-walkthrough/
 │   ├── skill.md
 │   └── references/
