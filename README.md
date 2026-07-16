@@ -40,6 +40,7 @@ If you find something useful, clone the skill directory you want and drop it int
 | [claude-gateway](claude-gateway/SKILL.md) | How to call Claude through the self-hosted gateway at `claude.bitsmiths.dev` — an OpenAI-compatible API wrapping a Claude Code OAuth token so internal tools bill against the Claude Max subscription at zero marginal cost. (Internal Bitsmiths infra; API key redacted.) |
 | [setup-vercel-redeploy](setup-vercel-redeploy/SKILL.md) | Scaffolds an on-demand Vercel redeploy trigger (GitHub Actions workflow + `redeploy` script) that forces a build past the free/Hobby plan's author restriction via a tiny dummy commit authored as Claude. Supports single-project and multi-project monorepos. |
 | [trigger-cloud-to-selfhost](trigger-cloud-to-selfhost/SKILL.md) | Standalone, project-agnostic protocol for migrating a trigger.dev project off the hosted cloud.trigger.dev plan onto a self-hosted instance (Docker Compose on your own VPS) — task image registry, scheduled-task cutover, repointing the codebase, and cancelling the old subscription. |
+| [whatsapp-read](whatsapp-read/SKILL.md) | Read your WhatsApp chats from Claude, **read-only and on-demand**: starts the local [whatsapp-mcp](https://github.com/lharries/whatsapp-mcp) Go bridge, waits until messages finish syncing into the local SQLite store, kills the bridge, then answers from the DB — so the WhatsApp connection lives only for seconds per question and nothing can ever send. First run walks through a consent-gated setup that patches the bridge's API to localhost-only (upstream binds all interfaces, unauthenticated) and updates whatsmeow past the "Client outdated (405)" error. Everything stays on your machine. |
 
 ### Claude Code & workflow
 
@@ -145,6 +146,10 @@ skills/
 │   └── SKILL.md
 ├── vibe-estimate/
 │   └── SKILL.md
+├── whatsapp-read/
+│   ├── SKILL.md
+│   └── scripts/
+│       └── sync.sh
 └── README.md
 ```
 
