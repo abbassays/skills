@@ -3,6 +3,7 @@
 draft-message/
 draft-email/
 linear-budget-report/
+recash-billing-report/
 
 # macOS
 .DS_Store

@@ -16,6 +16,8 @@ If you find something useful, clone the skill directory you want and drop it int
 | [deploy-and-merge](deploy-and-merge/SKILL.md) | Ships a PR to production in the right order for a Next.js + Supabase + Trigger.dev + Vercel stack: Supabase migrations → Trigger.dev redeploy → merge into main (schema must be live before Vercel auto-deploys on merge). Each step runs only if that PR actually touches it. Vercel/preview checks are never blockers. Stops loudly on failure and never auto-rolls-back a prod migration. Opt-in sync step fast-forwards local `main` without checking it out. |
 | [create-linear-ticket](create-linear-ticket/SKILL.md) | Creates a Linear ticket that's actually scheduled — **never a Backlog ghost**. Detects the project's Linear MCP, picks the cycle by measuring the current cycle's remaining load (Up Next if it fits this cycle, Todo if it goes to the next), always asks for an hourly estimate, infers assignee/labels/project/due date, sets a billing-month label only where one exists and only for work already started, and confirms the full ticket before creating it. ship-it delegates to it. |
 | [automated-pr-review](automated-pr-review/SKILL.md) | Claude-powered PR review system — three-job GitHub Actions workflow (automated review, pre-merge PM report, on-demand agent) with project-aware context via product-knowledge and coding-standards docs. |
+| [e2e-feature-test](e2e-feature-test/SKILL.md) | Proves a feature actually works by driving it end-to-end in a real browser (chrome-devtools MCP) — logs in as the project's test account, clicks through the flows, fails on console errors and failed requests, verifies DB side-effects when a database MCP is connected, and posts screenshots + a step-by-step report to the PR. Runtime-detects the dev command, port, login route, and database. |
+| [screenshot-to-code](screenshot-to-code/SKILL.md) | Converts UI screenshots into working HTML/CSS/React/Vue — detects design patterns and components and generates responsive layouts. Use when you drop in a screenshot of a site, app, or design and want the code. |
 | [ui-prototype-first](ui-prototype-first/SKILL.md) | A visual sign-off gate — builds a self-contained static HTML prototype (with BEFORE/AFTER callouts) and opens it in the browser before any React/TSX is written, hard-blocking component edits until you approve the design. Built on the project's real theme tokens so the conversion matches. |
 | [build-from-prototype](build-from-prototype/SKILL.md) | Converts an approved HTML prototype into matching React/Next.js + shadcn UI, treating the prototype as a hard guard. Reuse-first (reuse/refactor existing components before composing primitives; new is last resort) and runs a render → screenshot → compare → fix loop so the UI doesn't drift from the design. |
 | [dev-codebase-audit](dev-codebase-audit/SKILL.md) | Multi-repo, evidence-grounded audit of a single developer's recent work — produces a meeting-ready agenda, a full per-repo audit, and a multi-axis ratings card (10 axes, 1–5 scale, evidence-cited). Spawns parallel per-repo subagents and synthesizes their findings into cross-cutting patterns and systemdesign.io recommendations. |
@@ -45,6 +47,7 @@ If you find something useful, clone the skill directory you want and drop it int
 |---|---|
 | [interview-me](interview-me/SKILL.md) | Extracts what you actually want via batched multiple-choice interviewing (2–4 questions per round) until ~95% confident about intent — used before any plan or code when an ask is underspecified. |
 | [tldr](tldr/SKILL.md) | Compresses a wall of text into a ~15-second structured summary, on a fixed spine: Bottom line → (middle, adapts to the message type) → What you need to do → Watch out. Summarizes the last message by default, or the whole session on request. Compresses only — never adds new information. |
+| [one-liner-reply](one-liner-reply/SKILL.md) | Produces concise, executive-style summaries instead of verbose reasoning — use when you want the key takeaway from a long response. |
 | [find-skills](find-skills/SKILL.md) | Helps discover and install agent skills when you ask "how do I do X", "find a skill for X", or want to extend Claude's capabilities. |
 | [setup-claude-sounds](setup-claude-sounds/SKILL.md) | Wires custom per-event sound pools to Claude Code lifecycle hooks on macOS — personalised audio for SessionStart, Stop, Notification, and more, with headphone-friendly volume cap. |
 
@@ -106,6 +109,8 @@ skills/
 ├── diagram-walkthrough/
 │   ├── skill.md
 │   └── references/
+├── e2e-feature-test/
+│   └── SKILL.md
 ├── excalidraw-diagram-generator/
 │   ├── SKILL.md
 │   ├── references/
@@ -119,7 +124,11 @@ skills/
 │   └── SKILL.md
 ├── jsdoc-typescript-docs/
 │   └── SKILL.md
+├── one-liner-reply/
+│   └── SKILL.md
 ├── plain-english/
+│   └── SKILL.md
+├── screenshot-to-code/
 │   └── SKILL.md
 ├── setup-claude-sounds/
 │   └── SKILL.md
