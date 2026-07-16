@@ -64,8 +64,8 @@ If you find something useful, clone the skill directory you want and drop it int
 
 ```bash
 # Clone just the skill you want (no need to clone the whole repo)
-git clone --depth 1 --filter=blob:none --sparse https://github.com/abbassays/claude-skills
-cd claude-skills
+git clone --depth 1 --filter=blob:none --sparse https://github.com/abbassays/skills
+cd skills
 git sparse-checkout set <skill-name>
 
 # Move it into your Claude skills directory
@@ -75,7 +75,7 @@ cp -r <skill-name> ~/.claude/skills/
 Or clone the whole repo if you want everything:
 
 ```bash
-git clone https://github.com/abbassays/claude-skills ~/.claude/skills
+git clone https://github.com/abbassays/skills ~/.claude/skills
 ```
 
 ---
