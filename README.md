@@ -20,6 +20,7 @@ If you find something useful, clone the skill directory you want and drop it int
 | [screenshot-to-code](screenshot-to-code/SKILL.md) | Converts UI screenshots into working HTML/CSS/React/Vue — detects design patterns and components and generates responsive layouts. Use when you drop in a screenshot of a site, app, or design and want the code. |
 | [ui-prototype-first](ui-prototype-first/SKILL.md) | A visual sign-off gate — builds a self-contained static HTML prototype (with BEFORE/AFTER callouts) and opens it in the browser before any React/TSX is written, hard-blocking component edits until you approve the design. Built on the project's real theme tokens so the conversion matches. |
 | [build-from-prototype](build-from-prototype/SKILL.md) | Converts an approved HTML prototype into matching React/Next.js + shadcn UI, treating the prototype as a hard guard. Reuse-first (reuse/refactor existing components before composing primitives; new is last resort) and runs a render → screenshot → compare → fix loop so the UI doesn't drift from the design. |
+| [codebase-audit](codebase-audit/SKILL.md) | Deep, evidence-grounded health audit of a Next.js + Supabase project — fans out one sub-agent per axis (architecture, data access, RLS/security, types, tests, error/observability, performance, jobs, deps, domain correctness…), grounded in real file:line evidence and live MCP data where connected, then synthesizes a prioritized, bucketed remediation backlog plus forward guardrails. Everything repo-specific is detected at runtime. Report-first; filing tickets is a separate step. |
 | [dev-codebase-audit](dev-codebase-audit/SKILL.md) | Multi-repo, evidence-grounded audit of a single developer's recent work — produces a meeting-ready agenda, a full per-repo audit, and a multi-axis ratings card (10 axes, 1–5 scale, evidence-cited). Spawns parallel per-repo subagents and synthesizes their findings into cross-cutting patterns and systemdesign.io recommendations. |
 | [jsdoc-typescript-docs](jsdoc-typescript-docs/SKILL.md) | Documents TypeScript code with JSDoc comments and generates API documentation (TypeDoc-style). Use for "JSDoc", "code documentation", "API docs", or "inline documentation" requests. |
 | [vibe-estimate](vibe-estimate/SKILL.md) | Produces a tight hourly estimate for a coding task calibrated to an AI-augmented workflow — outputs an `Elapsed · billable` range plus the 2–4 dependencies that move it, no planning essay. |
@@ -90,6 +91,9 @@ skills/
 │   └── SKILL.md
 ├── claude-gateway/
 │   └── SKILL.md
+├── codebase-audit/
+│   ├── SKILL.md
+│   └── scripts/
 ├── create-linear-bot/
 │   └── SKILL.md
 ├── create-linear-ticket/

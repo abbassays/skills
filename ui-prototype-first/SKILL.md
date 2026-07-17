@@ -1,7 +1,7 @@
 ---
 name: ui-prototype-first
 description: >-
-  Build a standalone static HTML prototype showing exactly what the UI will look like — BEFORE writing any React/TSX code. Trigger proactively whenever an `execute-plan` flow loads a plan that touches .tsx files inside `src/components/`, `src/app/`, or `src/pages/`, or whenever the user proposes a visual UI change against an existing file or component. HARD-BLOCK any Edit/Write to .tsx files in the plan's scope until the user verbally approves the prototype ("looks good" / "approved" / "ship it" / "lgtm" or similar). Outputs a self-contained .html file at `/tmp/<slug>-prototype.html` with BEFORE/AFTER callouts on modified sections (REMOVED red, CHANGED amber, ADDED green), mobile-responsive, shadcn-approximate aesthetic. Do NOT skip this skill just because the plan also has logic / API / DB changes — if ANY TSX file in the plan's scope is going to be edited, the prototype runs first. The point is to catch UI design problems before the model writes a thousand lines of component code that then has to be thrown away or reworked.
+  Build a standalone static HTML prototype showing exactly what the UI will look like — BEFORE writing any React/TSX code. Trigger proactively whenever an `execute-plan` flow loads a plan that touches .tsx files inside `src/components/`, `src/app/`, or `src/pages/`, or whenever the user proposes a visual UI change against an existing file or component. HARD-BLOCK any Edit/Write to .tsx files in the plan's scope until the user verbally approves the prototype ("looks good" / "approved" / "ship it" / "lgtm" or similar). Outputs a self-contained .html file at `/tmp/<slug>-prototype.html` with BEFORE/AFTER callouts on modified sections (REMOVED red, CHANGED amber, ADDED green), mobile-responsive, shadcn-approximate aesthetic. Do NOT skip this skill just because the plan also has logic / API / DB changes — if ANY TSX file in the plan's scope is going to be edited, the prototype runs first. The point is to catch UI design problems before the model writes a thousand lines of component code that then has to be thrown away or reworked. Prototypes are grounded in the app's EXISTING UI: any section that modifies or mounts into an existing surface (including "new" dialogs/fields that attach to existing screens) maps to its host component, read fresh before drawing; genuinely greenfield screens skim sibling screens for layout idioms instead. The mockup reads as the real app growing a feature — never as an unanchored redesign.
 ---
 
 # UI Prototype First
@@ -60,11 +60,25 @@ If a plan file path was handed to you, read it end-to-end. Identify:
 
 If there is no plan file but the user is describing a visual change in chat, mentally treat the conversation as the plan — extract the same answers.
 
-### 2. Read the existing component (BEFORE state)
+### 2. Map every section to its host surface, then read it FRESH
 
-For every modification (not pure additions), read the current `.tsx` file(s) so you know what's there today. The prototype's BEFORE side has to be accurate — if you guess what the current UI looks like, you risk drawing a "before" that doesn't match reality, and the user's feedback will be about how your prototype misrepresents the current state instead of about the proposed change.
+This is the step that separates "the app grew a feature" from "a mockup of some other app" — and skipping it is this skill's most common failure in practice. Do it in two parts:
 
-You don't have to render every detail of the existing component. Capture: section structure, hierarchy, what panels exist, what's visually prominent, what the user is going to recognise as "the way it is now."
+**2a. Surface mapping — classify each section first.** Before drawing anything, classify every prototype section into one of two buckets:
+
+- **Attached to an existing surface** (the common case): the section modifies an existing screen, OR is "new" but mounts into one — a new dialog opened from an existing row's button, a new field in an existing form, a new column/state in an existing table, a new panel on an existing page. These MUST be mapped to their host component file(s), and drawing them without reading the host is the failure mode. Don't be fooled by the word "new" in the plan: a new dialog whose saved state renders into an existing table is attached, not greenfield. If you can't name the host file, grep for it now.
+- **Genuinely greenfield**: an entirely new screen/page with no existing counterpart. There is no host file — don't invent one and don't block on the mapping. Instead, skim 1–2 sibling screens (the nearest existing pages of the same kind) purely for layout idioms: app shell, toolbar placement, table/card patterns, empty states. The bar here is looser — the user is judging a fresh design, not an edit to something they know — but it should still look like a screen from THIS app.
+
+The reason for the split: feedback on attached sections is wasted when the BEFORE state is guessed ("that's a column, not a row"), while greenfield sections have no BEFORE state to get wrong.
+
+**2b. Read the host files in THIS invocation — session memory doesn't count.** Read the current `.tsx` of every host surface *now*, even if you read it earlier in the session. Long sessions compact, and a mental model of a component from three hours ago is a guess wearing a memory's clothes. The tell that this failed: the user's feedback ends up being about how the prototype misrepresents the current state ("why is that a row, it's a column", "that field doesn't exist") instead of about the proposed change — every minute of that feedback cycle is this step's cost, paid with interest.
+
+From the reads, capture and honor:
+- **Structure**: section order, what's a table column vs a row vs a card field, where actions live (hover affordances, 3-dot menus, footer buttons)
+- **Established patterns**: if the app already has an affordance for something similar (an existing mark/status flow, a canonical Badge shape, a shared date-format util, an existing dialog for a sibling action), the prototype extends or mirrors it — it does not invent a parallel one. New data in an existing table defaults to new *columns* shaped like the existing columns, not a new layout.
+- What the user will recognise as "the way it is now" — the BEFORE side must be drawn from the JSX you just read, not from the plan's description of it.
+
+**Caller args don't waive this.** When another flow invokes this skill with args, the args sometimes list "relevant existing components to read" — great, start there. When they don't, that's not permission to skip the mapping; derive the host files yourself. The invocations that ground the prototype in named files consistently get approved in one round; the ones that hand over only design tokens and a feature list consistently get torn apart.
 
 ### 3. Decide BEFORE/AFTER callouts
 
@@ -99,6 +113,8 @@ The prototype should *look like the real app* — and the cheapest way to make t
 - **Spacing** — match the host app's density (Tailwind spacing scale). Generous, not cramped — 16–24px section spacing, 12–16px inner padding.
 - **No purple gradient hero + Inter + three centered feature cards.** That is the visual signature of an AI-generated mockup and the user will read it as "wrong app."
 - **Sample data** — use realistic copy from the actual feature (the user's audit IDs, the user's brand names, the user's real domains). Don't lorem-ipsum it — the user is judging both the layout AND the content fit, and lorem-ipsum makes both harder.
+
+Tokens alone are NOT theme fidelity. Matching `--primary` and `--radius` while inventing your own table layouts and dialog structures produces a prototype in the right colors of the wrong app. The structural side of fidelity comes from step 2's host-surface reads; this step only covers paint.
 
 ### 6. Open it for the user, then wait
 
@@ -137,6 +153,9 @@ Ambiguous replies ("hmm", "interesting", "I guess that works") are NOT approval.
 
 Before declaring the prototype done and pinging the user, run this checklist mentally:
 
+- [ ] Every ATTACHED section (modifies or mounts into an existing surface) is mapped to a host file, and every host file was Read in THIS skill invocation (not recalled from earlier in the session); genuinely greenfield screens instead skimmed 1–2 sibling screens for layout idioms
+- [ ] BEFORE states are drawn from the actual JSX just read — structure, column-vs-row layout, action placement all match reality
+- [ ] New elements extend the app's existing patterns (existing dialogs, badge shapes, date-format utils, table idioms) instead of inventing parallel ones; deliberate deviations are labeled in a callout
 - [ ] File is at `/tmp/<slug>-prototype.html` with a descriptive filename
 - [ ] Opens in a browser with zero console errors when self-contained
 - [ ] Mobile-responsive (resize the window mentally — does it collapse cleanly below 700px?)
