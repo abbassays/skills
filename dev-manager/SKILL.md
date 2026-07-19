@@ -108,12 +108,15 @@ The agent reports which gates it ran and where the evidence lives. It does not g
 
 - Never invent an API, signature, schema field, config key, or env var.
 - If it can't be determined from the code, **read wider, then come back with a question**. A plausible guess is worse than a blocked stream.
+- **Never try to ask the user directly.** A subagent has no live terminal, so any interactive picker (`/interview-me`, AskUserQuestion, any prompt-for-input) **hangs the stream forever** and a text reply cannot unblock it, because the picker is waiting on keystrokes that will never come. **Return the question as plain text in your final output and stop.** Escalating is the orchestrator's job, not yours.
 - Flag every assumption inline in the PR description, not buried in a commit message.
 - PRs only. Never merge.
 
 ### When an agent comes back with a question — escalate it as a HARD STOP
 
-An agent that hits a genuine unknown **stops its stream and returns the question**. It does not proceed on a guess and flag it afterwards, because by then the code is already built around the wrong assumption.
+An agent that hits a genuine unknown **stops its stream and returns the question as text**. It does not proceed on a guess and flag it afterwards, because by then the code is already built around the wrong assumption.
+
+**Only you can ask the user.** You hold the live session; the agents don't. An agent that tries to open a picker just hangs. So the escalation is always: agent returns text → you decide whether you can answer it → if not, you put it to the user.
 
 When that comes back to you:
 
@@ -154,4 +157,5 @@ Only once a stream passes verification, clean up its worktree: `git worktree rem
 - If a gate (test, lint, typecheck) doesn't exist or didn't pass, say so. Never report green on something you didn't run.
 - **Never trust a subagent's summary.** A stream is done when *you* have seen the artifact, not when the agent says it's done. This is the single most common way parallel runs silently degrade.
 - **Never quietly drop a gate** the user confirmed for a stream. If it can't run, say why; don't substitute a weaker check and call it done.
+- **Never brief an agent to run an interactive skill.** `/interview-me` and anything else that opens a picker only works in the live session, which is yours. Agents return questions as text; you ask.
 - Report as each stream lands. Relay any single clarification an agent surfaces; don't answer coupled design questions on the user's behalf.
