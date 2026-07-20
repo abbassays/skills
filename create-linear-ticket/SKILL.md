@@ -1,6 +1,6 @@
 ---
 name: create-linear-ticket
-description: "Create a Linear ticket properly — scheduled into a real cycle with a real status, never dumped into invisible Backlog. Use WHENEVER the user asks to create a Linear ticket/issue: 'create a linear ticket', 'make a ticket for this', 'file an issue', 'add this to Linear', 'create a ticket to fix X', or when another skill (e.g. ship-it) needs a ticket. Detects whichever Linear MCP is connected for that project (no hardcoded slug). Picks the cycle by measuring the current cycle's remaining load, sets status accordingly (Up Next if it lands in the current cycle, Todo if it lands in the next), always asks for an HOURLY estimate, infers assignee/labels/project/due date, and sets a billing-month label only in workspaces that have one AND only when the ticket is created as already started/done. Shows one complete preview and takes one confirmation before creating."
+description: "Create a Linear ticket properly — scheduled into a real cycle with a real status, never dumped into invisible Backlog. Use WHENEVER the user asks to create a Linear ticket/issue: 'create a linear ticket', 'make a ticket for this', 'file an issue', 'add this to Linear', 'create a ticket to fix X', or when another skill (e.g. ship-it) needs a ticket. Detects whichever Linear MCP is connected for that project (no hardcoded slug). Picks the cycle by measuring the current cycle's remaining load, sets status accordingly (Up Next if it lands in the current cycle, Todo if it lands in the next), infers assignee/labels/project/due date/estimate, and sets a billing-month label only in workspaces that have one AND only when the ticket is created as already started/done. Creates the ticket DIRECTLY — no preview, no confirmation gate — then reports the ticket ID, URL, and the fields it set so anything wrong is fixable in one click."
 user-invocable: true
 ---
 
@@ -9,8 +9,9 @@ user-invocable: true
 Linear's default is a trap: a ticket with a title, no status, no owner, no cycle, no estimate, sitting
 in Backlog where nobody will ever see it again. This skill refuses to produce that.
 
-**Every ticket this skill creates lands in a cycle with a real status, an owner, and an hourly
-estimate.** If it can't get those, it asks — it doesn't shrug and default to Backlog.
+**Every ticket this skill creates lands in a cycle with a real status and an owner.** It creates
+directly, without a preview or confirmation step, then reports what it set so anything wrong is a
+one-click fix in Linear. It never shrugs and defaults to Backlog.
 
 ---
 
@@ -65,9 +66,9 @@ Never assume field names. Before proposing anything, read the real workspace:
 
 4. **A due date overrides the load rule.** If the user gives a due date that falls inside a different
    cycle, that cycle wins — and the status follows the same rule (current cycle → Up Next, a later
-   cycle → Todo). Say so in the preview.
+   cycle → Todo). Say so in the report.
 
-5. **Show your work.** In the preview, state the numbers you used:
+5. **Show your work.** In the post-creation report, state the numbers you used:
    > *Current cycle (Jun 16-30): 34h of unfinished work, ~3 working days left (~18h capacity). Over
    > capacity, so this goes to the next cycle as Todo.*
 
@@ -76,24 +77,7 @@ determine a cycle, ask — don't fall back to Backlog.
 
 ---
 
-## Step 4 — Ask for the hourly estimate (always, and blank)
-
-The estimate field in these workspaces holds **hours**, not story points.
-
-- **Always ask.** This is billable, so never auto-set it.
-- **Ask blank — do not suggest a number.** No anchoring. Just: *"How many hours for this?"*
-- **It's required.** Don't create the ticket without one. If the user genuinely doesn't know, ask them
-  to give a rough ceiling rather than skipping the field.
-
-(If they *want* a suggestion, they can run `vibe-estimate` themselves and tell you the number. Don't
-volunteer one.)
-
-Note: the estimate you get here also feeds Step 3's load calculation for the *next* ticket someone
-files, so getting it filled in matters beyond this one issue.
-
----
-
-## Step 5 — Infer the rest, then propose it
+## Step 4 — Infer the rest, then propose it
 
 Infer from the conversation and the workspace, and propose (don't interrogate):
 
@@ -110,7 +94,7 @@ Infer from the conversation and the workspace, and propose (don't interrogate):
 
 ---
 
-## Step 6 — Billing month (only sometimes)
+## Step 5 — Billing month (only sometimes)
 
 **Only in workspaces where a billing-month label exists.** If there's no such label, skip this
 entirely and don't mention it.
@@ -127,36 +111,35 @@ Don't set a billing month "in advance" from the due date or cycle. Billing follo
 
 ---
 
-## Step 7 — One preview, one confirmation, then create
+## Step 6 — Create it directly, then report what was created
 
-Show the **complete** ticket in one block, then take confirmations and edits in a **single** batched
-question. Don't drip-feed questions.
+**No preview, no confirmation gate. Create the ticket.** Everything above is already decided from the
+workspace and the context, so don't stop to ask permission — call the detected `…save_issue` /
+`…create_issue` tool and make the ticket.
+
+Only ask a question if something is genuinely **blocking** and can't be inferred (an ambiguous team,
+or no cycle determinable at all). A missing optional field is not blocking: create the ticket without
+it and say so.
+
+After creating, report the result compactly so it can be corrected in Linear if anything's off:
 
 ```
-Title:        fix(checkout): webhook can arrive before the order row exists
-Team:         Engineering
-Status:       Todo
-Cycle:        Cycle 24 (Jul 1-15)   ← current cycle is over capacity (34h left, ~18h room)
-Assignee:     Ali
-Estimate:     4h
-Labels:       bug, backend
-Project:      Checkout revamp
-Due date:     —
+Created ENG-482 — fix(checkout): webhook can arrive before the order row exists
+https://linear.app/acme/issue/ENG-482
+
+Status:        Todo
+Cycle:         Cycle 24 (Jul 1-15)   ← current cycle over capacity (34h left, ~18h room)
+Assignee:      Ali
+Estimate:      4h
+Labels:        bug, backend
+Project:       Checkout revamp
+Due date:      —
 Billing month: — (not started yet)
-
-Description:
-Orders are created after the Stripe call, so a fast webhook can arrive before the row exists.
-
-Acceptance criteria:
-- [ ] order row is written as `pending` before the PaymentIntent is created
-- [ ] webhook handles the "order not found" case without dropping the event
-- [ ] a test covers the webhook-arrives-first ordering
 ```
 
-Then ask once: *"Create this? Or tell me what to change (assignee / estimate / cycle / labels / …)."*
-
-Once confirmed, create it with the detected `…save_issue` / `…create_issue` tool, and report back the
-**ticket ID and URL** in one line. Never create before the confirmation.
+Lead with the **ticket ID and URL**. The field list underneath is so a wrong assignee, estimate, or
+cycle is obvious at a glance and can be fixed in Linear in one click, which is faster than a
+confirmation round-trip before every ticket.
 
 ---
 
@@ -167,12 +150,11 @@ Once confirmed, create it with the detected `…save_issue` / `…create_issue` 
 - [ ] **Status is never Backlog and never empty**
 - [ ] Cycle chosen by measuring current-cycle load (numbers shown), or overridden by a real due date
 - [ ] Status matches the cycle: Up Next = current cycle, Todo = next cycle
-- [ ] Hourly estimate was **asked for, blank**, and is set
 - [ ] Assignee is set
 - [ ] Labels/project only use values that exist in this workspace
 - [ ] Billing month set **only** if the label exists AND the ticket is being created as started/done
-- [ ] Full preview shown and explicitly confirmed before creating
-- [ ] Reported the ticket ID + URL afterwards
+- [ ] Created directly — no preview gate, and no question asked unless something was genuinely blocking
+- [ ] Reported the ticket ID + URL, with the field list underneath so mistakes are fixable at a glance
 
 ---
 
@@ -182,4 +164,4 @@ Once confirmed, create it with the detected `…save_issue` / `…create_issue` 
 - Does not stamp a billing month when a ticket later starts or completes (separate concern).
 - Does not invent labels, projects, or statuses that don't exist in the workspace.
 - Does not create anything in Backlog.
-- Does not create the ticket before the user confirms the preview.
+- Does not stop for a preview or confirmation before creating — it creates, then reports.
